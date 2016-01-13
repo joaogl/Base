@@ -7,10 +7,7 @@
 [![Quality Score][ico-code-quality]][link-code-quality]
 [![Total Downloads][ico-downloads]][link-downloads]
 
-**Note:** Replace ```Joao Lourenco``` ```joaogl``` ```http://joaolourenco.net/``` ```jglourenco.pt@gmail.com``` ```jlourenco``` ```base``` ```This is the basic module for my ready to deploy website structure``` with their correct values in [README.md](README.md), [CHANGELOG.md](CHANGELOG.md), [CONTRIBUTING.md](CONTRIBUTING.md), [LICENSE.md](LICENSE.md) and [composer.json](composer.json) files, then delete this line.
-
-This is where your description should go. Try and limit it to a paragraph or two, and maybe throw in a mention of what
-PSRs you support to avoid any confusion with users and contributors.
+This is the basic module for my ready to deploy website structure
 
 ## Install
 
@@ -62,9 +59,9 @@ The MIT License (MIT). Please see [License File](LICENSE.md) for more informatio
 [ico-downloads]: https://img.shields.io/packagist/dt/jlourenco/base.svg?style=flat-square
 
 [link-packagist]: https://packagist.org/packages/jlourenco/base
-[link-travis]: https://travis-ci.org/jlourenco/base
-[link-scrutinizer]: https://scrutinizer-ci.com/g/jlourenco/base/code-structure
-[link-code-quality]: https://scrutinizer-ci.com/g/jlourenco/base
+[link-travis]: https://travis-ci.org/joaogl/base
+[link-scrutinizer]: https://scrutinizer-ci.com/g/joaogl/base/code-structure
+[link-code-quality]: https://scrutinizer-ci.com/g/joaogl/base
 [link-downloads]: https://packagist.org/packages/jlourenco/base
 [link-author]: https://github.com/joaogl
 [link-contributors]: ../../contributors

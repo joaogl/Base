@@ -14,7 +14,6 @@ class baseServiceProvider extends ServiceProvider
     public function boot()
     {
         // Publish our routes
-        // if (!$this->app->routesAreCached())
 		require __DIR__ . '/routes.php';
 
         // Publish our views
