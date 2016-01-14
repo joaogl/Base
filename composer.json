@@ -27,7 +27,7 @@
     },
     "autoload": {
         "psr-4": {
-            "jlourenco\\base\\": "src"
+            "jlourenco\\base\\": "src/"
         }
     },
     "autoload-dev": {

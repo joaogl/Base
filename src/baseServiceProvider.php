@@ -41,7 +41,7 @@ class baseServiceProvider extends ServiceProvider
     public function register()
     {
         // Bind the
-        $this->app->bind('base', function(){
+        $this->app->bind('base', function($app){
             return new base;
         });
     }
