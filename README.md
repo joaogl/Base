@@ -61,7 +61,7 @@ The MIT License (MIT). Please see [License File](LICENSE.md) for more informatio
 [link-packagist]: https://packagist.org/packages/jlourenco/base
 [link-travis]: https://travis-ci.org/joaogl/base
 [link-scrutinizer]: https://scrutinizer-ci.com/g/joaogl/base/code-structure
-[link-code-quality]: https://scrutinizer-ci.com/g/joaogl/base
+[link-code-quality]: https://scrutinizer-ci.com/g/joaogl/base/?branch=master
 [link-downloads]: https://packagist.org/packages/jlourenco/base
 [link-author]: https://github.com/joaogl
 [link-contributors]: ../../contributors
