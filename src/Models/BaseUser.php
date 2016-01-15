@@ -2,9 +2,20 @@
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Cartalyst\Sentinel\Users\EloquentUser;
+use jlourenco\base\Traits\Creation;
 
 class BaseUser extends EloquentUser
 {
+
+    /**
+     * To allow soft deletes
+     */
+    use SoftDeletes;
+
+    /**
+     * To allow user actions identity
+     */
+    use Creation;
 
     /**
      * The database table used by the model.
@@ -122,11 +133,6 @@ class BaseUser extends EloquentUser
             'save' => true
         ],
     ];
-
-    /**
-     * To allow soft deletes
-     */
-    use SoftDeletes;
 
     protected $dates = ['birthday', 'last_login'];
 
