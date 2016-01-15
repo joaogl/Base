@@ -11,10 +11,6 @@ use Illuminate\Support\Fluent;
  */
 class MySqlGrammar extends IlluminateMySqlGrammar {
 
-    /**
-     *
-     * @return void
-     */
     public function __construct()
     {
         if ( ! in_array('Collate', $this->modifiers) )
