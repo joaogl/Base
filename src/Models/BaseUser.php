@@ -204,16 +204,12 @@ class BaseUser extends EloquentUser
         switch ($this->status) {
             case 0:
                 return "<span class=\"label label-warning square\">Inactive</span>";
-                break;
             case 1:
                 return "<span class=\"label label-success square\">Active</span>";
-                break;
             case 2:
                 return "<span class=\"label label-danger square\">Blocked</span>";
-                break;
             case 3:
                 return "<span class=\"label label-warning square\">Inactive</span>";
-                break;
         }
     }
 
