@@ -47,6 +47,7 @@ class CreateBaseTables extends Migration
             $table->string('name', 25);
             $table->string('vale', 150)->nullable();
             $table->string('description', 250)->nullable();
+            $table->timestamps();
             $table->creation();
         });
 
@@ -60,6 +61,7 @@ class CreateBaseTables extends Migration
             $table->timestamps();
             $table->softDeletes();
             $table->creation();
+
             $table->unique('slug');
         });
 
@@ -68,7 +70,8 @@ class CreateBaseTables extends Migration
             $table->integer('user')->unsigned();
             $table->integer('group')->unsigned();
 
-            $table->nullableTimestamps();
+            $table->timestamps();
+            $table->softDeletes();
             $table->creation();
 
             $table->foreign('user')->references('id')->on('User');
@@ -83,15 +86,8 @@ class CreateBaseTables extends Migration
             $table->timestamp('visibility');
             $table->string('link', 250)->nullable();
             $table->text('requirements')->nullable();
+
             $table->timestamps();
-        });
-
-        Schema::create('Permission', function (Blueprint $table) {
-            $table->increments('id');
-            $table->string('key', 100);
-            $table->string('description', 250);
-
-            $table->unique('key');
         });
 
     }
@@ -109,7 +105,6 @@ class CreateBaseTables extends Migration
         Schema::drop('Group_User');
         Schema::drop('Group');
         Schema::drop('ActivityFeed');
-        Schema::drop('Permission');
         Schema::drop('User');
 
     }
