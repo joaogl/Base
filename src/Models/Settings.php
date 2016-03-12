@@ -20,11 +20,7 @@ class Settings extends Model
      * {@inheritDoc}
      */
     protected $fillable = [
-        'friendy_name',
-        'name',
-        'vale',
-        'link',
-        'description',
+        'value'
     ];
 
 }

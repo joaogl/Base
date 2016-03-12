@@ -222,7 +222,8 @@ class AuthController extends Controller
          * 2 - User activation
          * 3 - Admin activation
          */
-        $signupStatus = 1;
+
+        $signupStatus = \Base::getSetting('USER_REGISTRATION');
         /************TEMP VARIABLE************/
 
         $signupEnabled = $signupStatus != 0;
@@ -235,7 +236,7 @@ class AuthController extends Controller
         $rules = array();
 
         // Declare the rules for the form validation
-        foreach((new \jlourenco\base\Models\BaseUser())->getRegisterFields() as $fieldid => $field)
+        foreach(Sentinel::createModel()->getRegisterFields() as $fieldid => $field)
             $rules[$fieldid] = $field['validator'];
 
         $rules['g-recaptcha-response'] = 'required';
@@ -275,7 +276,7 @@ class AuthController extends Controller
             {
                 // Update the temporary user to the new one
                 if (Sentinel::validForUpdate($data, ['email' => Input::get('email')])) {
-                    $testing = (new \jlourenco\base\Models\BaseUser())->getRegisterFields();
+                    $testing = Sentinel::createModel()->getRegisterFields();
                     $user = Sentinel::findById($user->id);
 
                     foreach($data as $fieldid => $field)

@@ -1,6 +1,8 @@
 <?php namespace jlourenco\base;
 
 use Illuminate\Support\ServiceProvider;
+use jlourenco\base\Repositories\SettingsRepository;
+use jlourenco\base\Repositories\UserRepository;
 
 class baseServiceProvider extends ServiceProvider
 {
@@ -12,10 +14,7 @@ class baseServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $config = $this->app['config']->get('jlourenco.base');
-        $users = array_get($config, 'models.User');
 
-        \Sentinel::setModel($users);
     }
 
     /**
@@ -28,6 +27,8 @@ class baseServiceProvider extends ServiceProvider
         $this->prepareResources();
         $this->registerGroups();
         $this->registerUsers();
+        $this->registerSettings();
+        $this->registerBase();
     }
 
     /**
@@ -75,7 +76,7 @@ class baseServiceProvider extends ServiceProvider
      */
     protected function registerUsers()
     {
-        $this->app->singleton('jlourenco.users', function ($app) {
+        $this->app->singleton('jlourenco.user', function ($app) {
             $config = $app['config']->get('jlourenco.base');
 
             $users = array_get($config, 'models.User');
@@ -84,7 +85,7 @@ class baseServiceProvider extends ServiceProvider
             if (class_exists($model) && method_exists($model, 'setUsersModel'))
                 forward_static_call_array([$model, 'setUsersModel'], [$users]);
 
-            return new IlluminateUserRepository($users);
+            return new UserRepository($users);
         });
     }
 
@@ -95,7 +96,7 @@ class baseServiceProvider extends ServiceProvider
      */
     protected function registerGroups()
     {
-        $this->app->singleton('jlourenco.groups', function ($app) {
+        $this->app->singleton('jlourenco.group', function ($app) {
             $config = $app['config']->get('jlourenco.base');
 
             $model = array_get($config, 'base.models.Group');
@@ -105,13 +106,47 @@ class baseServiceProvider extends ServiceProvider
     }
 
     /**
+     * Registers the settings.
+     *
+     * @return void
+     */
+    protected function registerSettings()
+    {
+        $this->app->singleton('jlourenco.settings', function ($app) {
+            $config = $app['config']->get('jlourenco.base');
+
+            $model = array_get($config, 'models.Settings');
+
+            return new SettingsRepository($model);
+        });
+    }
+
+    /**
+     * Registers base.
+     *
+     * @return void
+     */
+    protected function registerBase()
+    {
+        $this->app->singleton('base', function ($app) {
+            $base = new Base($app['jlourenco.settings'], $app['jlourenco.user']);
+
+            return $base;
+        });
+
+        $this->app->alias('base', 'jlourenco\base\Base');
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function provides()
     {
         return [
-            'jlourenco.users',
-            'jlourenco.groups',
+            'jlourenco.user',
+            'jlourenco.group',
+            'jlourenco.settings',
+            'base'
         ];
     }
 

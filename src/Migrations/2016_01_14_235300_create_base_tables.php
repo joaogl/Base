@@ -53,7 +53,7 @@ class CreateBaseTables extends Migration
             $table->increments('id');
             $table->string('friendly_name', 25);
             $table->string('name', 25);
-            $table->string('vale', 150)->nullable();
+            $table->string('value', 150)->nullable();
             $table->string('description', 250)->nullable();
             $table->timestamps();
             $table->creation();
