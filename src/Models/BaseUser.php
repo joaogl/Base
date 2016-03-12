@@ -2,7 +2,7 @@
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Cartalyst\Sentinel\Users\EloquentUser;
-use jlourenco\base\Traits\Creation;
+use jlourenco\support\Traits\Creation;
 
 class BaseUser extends EloquentUser
 {
@@ -13,7 +13,7 @@ class BaseUser extends EloquentUser
     use SoftDeletes;
 
     /**
-     * To allow user actions identity
+     * To allow user actions identity (Created_by, Updated_by, Deleted_by)
      */
     use Creation;
 
@@ -137,28 +137,11 @@ class BaseUser extends EloquentUser
     protected $dates = ['birthday', 'last_login'];
 
     /**
-     * Scope to get all the social contacts
+     * The groups model name.
+     *
+     * @var string
      */
-    private function scopeSocialLinks()
-    {
-        return $this->scopeContacts()->where('contact_reference', 'SocialNetworks');
-    }
-
-    /**
-     * Scope do get all the contacts
-     */
-    private function scopeContacts()
-    {
-        return $this->belongsToMany('App\Contact', 'Contact_User', 'user', 'contact');
-    }
-
-    /**
-     * Scope do get all the contacts
-     */
-    private function scopeProjects()
-    {
-        return $this->belongsToMany('App\Project', 'Project_User', 'user', 'project')->groupBy('Project_User.project');
-    }
+    protected static $groupsModel = 'jlourenco\base\Models\Group';
 
     /**
      * Scope do get all staff
@@ -173,30 +156,6 @@ class BaseUser extends EloquentUser
         return BaseUser::where('staff', 1)
             ->orderBy('first_name', 'desc')
             ->get();
-    }
-
-    /**
-     * Method to get all the social contacts
-     */
-    public function socialLinks()
-    {
-        return $this->scopeSocialLinks()->take(5)->get();
-    }
-
-    /**
-     * Method to get all the social contacts
-     */
-    public function projects()
-    {
-        return $this->scopeProjects()->take(5)->get();
-    }
-
-    /**
-     * Method to get all the contacts.
-     */
-    public function contacts()
-    {
-        return $this->scopeContacts()->get();
     }
 
     public function status()
@@ -230,22 +189,7 @@ class BaseUser extends EloquentUser
      */
     public function groups()
     {
-        return $this->belongsToMany('jlourenco\base\Models\Group', 'Group_User', 'user', 'group')->withTimestamps();
-    }
-
-    /**
-     * The Menus relationship.
-     *
-     * @return List of \App\Menu
-     */
-    public function menus($pos)
-    {
-        $results = $this->belongsToMany('App\Menu', 'Menu_User', 'user', 'menu')->withTimestamps()->where('pos', $pos)->get();
-
-        foreach ($this->groups as $group)
-            $results->merge($group->menus->where('pos', $pos));
-
-        return $results;
+        return $this->belongsToMany(static::$groupsModel, 'Group_User', 'user', 'group')->withTimestamps();
     }
 
     /**
@@ -256,6 +200,27 @@ class BaseUser extends EloquentUser
     public function roles()
     {
         return $this->belongsToMany(static::$rolesModel, 'Group_User', 'user', 'group')->withTimestamps();
+    }
+
+    /**
+     * Returns the groups model.
+     *
+     * @return string
+     */
+    public static function getGroupsModel()
+    {
+        return static::$groupsModel;
+    }
+
+    /**
+     * Sets the groups model.
+     *
+     * @param  string  $groupsModel
+     * @return void
+     */
+    public static function setGroupsModel($groupsModel)
+    {
+        static::$groupsModel = $groupsModel;
     }
 
 }

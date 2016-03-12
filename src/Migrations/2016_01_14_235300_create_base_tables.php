@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use \jlourenco\base\Database\Blueprint;
+use \jlourenco\support\Database\Blueprint;
 
 class CreateBaseTables extends Migration
 {
@@ -34,6 +34,10 @@ class CreateBaseTables extends Migration
             $table->creation();
         });
 
+        Schema::table('User', function (Blueprint $table) {
+            $table->creationRelation();
+        });
+
         Schema::create('Logs', function (Blueprint $table) {
             $table->increments('id');
             $table->text('log');
@@ -41,14 +45,22 @@ class CreateBaseTables extends Migration
             $table->creation();
         });
 
+        Schema::table('Logs', function (Blueprint $table) {
+            $table->creationRelation();
+        });
+
         Schema::create('Settings', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('friendy_name', 25);
+            $table->string('friendly_name', 25);
             $table->string('name', 25);
             $table->string('vale', 150)->nullable();
             $table->string('description', 250)->nullable();
             $table->timestamps();
             $table->creation();
+        });
+
+        Schema::table('Settings', function (Blueprint $table) {
+            $table->creationRelation();
         });
 
         Schema::create('Group', function (Blueprint $table) {
@@ -65,6 +77,10 @@ class CreateBaseTables extends Migration
             $table->unique('slug');
         });
 
+        Schema::table('Group', function (Blueprint $table) {
+            $table->creationRelation();
+        });
+
         Schema::create('Group_User', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('user')->unsigned();
@@ -78,14 +94,17 @@ class CreateBaseTables extends Migration
             $table->foreign('group')->references('id')->on('Group');
         });
 
+        Schema::table('Group_User', function (Blueprint $table) {
+            $table->creationRelation();
+        });
+
         Schema::create('ActivityFeed', function (Blueprint $table) {
             $table->increments('id');
             $table->string('added_by', 150);
             $table->text('activity');
             $table->string('icon', 100);
-            $table->timestamp('visibility');
             $table->string('link', 250)->nullable();
-            $table->text('requirements')->nullable();
+            $table->text('permissions')->nullable();
 
             $table->timestamps();
         });

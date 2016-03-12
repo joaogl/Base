@@ -1,12 +1,8 @@
-<?php
+<?php namespace jlourenco\base\Models;
 
-namespace jlourenco\base\Models;
+use Cartalyst\Sentinel\Roles\EloquentRole;
 
-use Illuminate\Database\Eloquent\Model;
-use Cartalyst\Sentinel\Permissions\PermissibleInterface;
-use Cartalyst\Sentinel\Permissions\PermissibleTrait;
-
-class Group extends \Cartalyst\Sentinel\Roles\EloquentRole
+class Group extends EloquentRole
 {
 
     /**
@@ -32,16 +28,6 @@ class Group extends \Cartalyst\Sentinel\Roles\EloquentRole
     public function users()
     {
         return $this->belongsToMany(static::$usersModel, 'Group_User', 'group', 'user')->withTimestamps();
-    }
-
-    /**
-     * The Menus relationship.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
-     */
-    public function menus()
-    {
-        return $this->belongsToMany('App\Menu', 'Menu_Group', 'group', 'menu')->withTimestamps();
     }
 
 }
