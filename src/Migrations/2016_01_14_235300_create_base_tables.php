@@ -23,9 +23,12 @@ class CreateBaseTables extends Migration
             $table->string('email')->unique();
             $table->text('description')->nullable();
             $table->timestamp('birthday')->nullable();
+            $table->string('pic')->nullable();
+            $table->integer('gender');
             $table->tinyInteger('status');
             $table->string('ip', 15);
-            $table->binary('staff');
+            $table->tinyInteger('staff');
+            $table->tinyInteger('force_new_password');
             $table->timestamp('last_login')->nullable();
             $table->text('permissions')->nullable();
             $table->rememberToken();
@@ -38,9 +41,30 @@ class CreateBaseTables extends Migration
             $table->creationRelation();
         });
 
+        Schema::create('Visits', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('url')->nullable();
+            $table->string('ip', 15)->nullable();
+            $table->string('browser')->nullable();
+            $table->tinyInteger('checked');
+
+            $table->string('isoCode')->nullable();
+            $table->string('country')->nullable();
+            $table->string('city')->nullable();
+            $table->string('state')->nullable();
+            $table->string('postal_code')->nullable();
+            $table->string('lat')->nullable();
+            $table->string('lon')->nullable();
+            $table->string('timezone')->nullable();
+            $table->string('continent')->nullable();
+            $table->timestamps();
+        });
+
         Schema::create('Logs', function (Blueprint $table) {
             $table->increments('id');
             $table->text('log');
+            $table->integer('target')->nullable();
+            $table->string('ip', 15)->nullable();
             $table->timestamps();
             $table->creation();
         });
@@ -120,6 +144,7 @@ class CreateBaseTables extends Migration
     {
 
         Schema::drop('Logs');
+        Schema::drop('Visits');
         Schema::drop('Settings');
         Schema::drop('Group_User');
         Schema::drop('Group');

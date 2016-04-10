@@ -3,6 +3,7 @@
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Cartalyst\Sentinel\Users\EloquentUser;
 use jlourenco\support\Traits\Creation;
+use Nicolaslopezj\Searchable\SearchableTrait;
 
 class BaseUser extends EloquentUser
 {
@@ -16,6 +17,11 @@ class BaseUser extends EloquentUser
      * To allow user actions identity (Created_by, Updated_by, Deleted_by)
      */
     use Creation;
+
+    /**
+     * To allow this model to be searched
+     */
+    use SearchableTrait;
 
     /**
      * The database table used by the model.
@@ -44,7 +50,7 @@ class BaseUser extends EloquentUser
     protected $fillable = [
         'username',
         'email',
-        'password',
+        //'password',
         'last_name',
         'first_name',
         'permissions',
@@ -52,7 +58,15 @@ class BaseUser extends EloquentUser
         'status',
         'ip',
         'staff',
+        'gender',
     ];
+
+    /**
+     * The attributes that aren't mass assignable.
+     *
+     * @var array
+     */
+    protected $guarded = ['password'];
 
     /**
      * The attributes that will appear on the register form.
@@ -132,9 +146,17 @@ class BaseUser extends EloquentUser
             'maxlength' => 25,
             'save' => true
         ],
+        'gender' => [
+            'type' => 'gender',
+            'validator' => 'required|digits_between:0,2',
+            'label' => 'Gender',
+            'placeholder' => 'Your gender',
+            'classes' => 'form-control',
+            'save' => true
+        ],
     ];
 
-    protected $dates = ['birthday', 'last_login'];
+    protected $dates = ['birthday', 'last_login', 'deleted_at'];
 
     /**
      * The groups model name.
@@ -142,6 +164,24 @@ class BaseUser extends EloquentUser
      * @var string
      */
     protected static $groupsModel = 'jlourenco\base\Models\Group';
+
+    /**
+     * Searchable rules.
+     *
+     * @var array
+     */
+    protected $searchable = [
+        'columns' => [
+            'User.first_name' => 10,
+            'User.last_name' => 10,
+            'BlogPost.keywords' => 5,
+            'BlogPost.title' => 3,
+            'BlogPost.contents' => 1,
+        ],
+        'joins' => [
+            'BlogPost' => [ 'User.id', 'BlogPost.author' ],
+        ],
+    ];
 
     /**
      * Scope do get all staff

@@ -2,7 +2,12 @@
 
 use jlourenco\base\Repositories\SettingsRepositoryInterface;
 use jlourenco\base\Repositories\UserRepositoryInterface;
+use jlourenco\base\Repositories\LogRepositoryInterface;
+use jlourenco\base\Repositories\VisitsRepositoryInterface;
 use BadMethodCallException;
+use Request;
+use Jenssegers\Agent\Agent;
+use GeoIP;
 
 class Base
 {
@@ -22,6 +27,21 @@ class Base
     protected $user;
 
     /**
+     * The Log repository.
+     *
+     * @var \jlourenco\base\Repositories\LogRepositoryInterface
+     */
+    protected $logs;
+
+
+    /**
+     * The Visits repository.
+     *
+     * @var \jlourenco\base\Repositories\VisitsRepositoryInterface
+     */
+    protected $visits;
+
+    /**
      * Cached, available methods on the settings repository, used for dynamic calls.
      *
      * @var array
@@ -33,11 +53,15 @@ class Base
      *
      * @param  \jlourenco\base\Repositories\SettingsRepositoryInterface  $settings
      * @param  \jlourenco\base\Repositories\UserRepositoryInterface  $user
+     * @param  \jlourenco\base\Repositories\LogRepositoryInterface  $log
+     * @param  \jlourenco\base\Repositories\VisitsRepositoryInterface  $visits
      */
-    public function __construct(SettingsRepositoryInterface $settings, UserRepositoryInterface $user)
+    public function __construct(SettingsRepositoryInterface $settings, UserRepositoryInterface $user, LogRepositoryInterface $log, VisitsRepositoryInterface $visits)
     {
         $this->settings = $settings;
         $this->user = $user;
+        $this->logs = $log;
+        $this->visits = $visits;
     }
 
     /**
@@ -83,6 +107,48 @@ class Base
     }
 
     /**
+     * Returns the log repository.
+     *c
+     * @return \jlourenco\base\Repositories\LogRepositoryInterface
+     */
+    public function getLogsRepository()
+    {
+        return $this->logs;
+    }
+
+    /**
+     * Sets the log repository.
+     *
+     * @param  \jlourenco\base\Repositories\LogRepositoryInterface $log
+     * @return void
+     */
+    public function setLogsRepository(LogRepositoryInterface $log)
+    {
+        $this->logs = $log;
+    }
+
+    /**
+     * Returns the visits repository.
+     *c
+     * @return \jlourenco\base\Repositories\VisitsRepositoryInterface
+     */
+    public function getVisitsRepository()
+    {
+        return $this->visits;
+    }
+
+    /**
+     * Sets the visits repository.
+     *
+     * @param  \jlourenco\base\Repositories\VisitsRepositoryInterface $visits
+     * @return void
+     */
+    public function setVisitsRepository(VisitsRepositoryInterface $visits)
+    {
+        $this->visits = $visits;
+    }
+
+    /**
      * Returns all accessible methods on the associated settings repository.
      *
      * @return array
@@ -119,6 +185,67 @@ class Base
         }
 
         throw new BadMethodCallException("Call to undefined method {$method}()");
+    }
+
+    /**
+     * Create a log
+     *
+     * @param $logMessage
+     */
+    public function Log($logMessage)
+    {
+        $log = $this->getLogsRepository()->create(['log' => $logMessage, 'ip' => Request::ip()]);
+    }
+
+    /**
+     * Create a log and associates it to a user
+     *
+     * @param $logMessage
+     * @param $userTarget
+     */
+    public function TargettedLog($logMessage, $userTarget)
+    {
+        $log = $this->getLogsRepository()->create(['log' => $logMessage, 'target' => $userTarget, 'ip' => Request::ip()]);
+    }
+
+    public function RegisterVisit()
+    {
+        $agent = new Agent();
+        $browser = $agent->browser();
+        $version = $agent->version($browser);
+
+        $platform = $agent->platform();
+        $pversion = $agent->version($platform);
+
+        $browserString = $browser . ' version ' . $version . ' | ' . $platform . ' version ' . $pversion;
+
+        $visit = $this->getVisitsRepository()->create(['url' => Request::url(), 'ip' => Request::ip(), 'browser' => $browserString]);
+    }
+
+    public function CompleteVisits()
+    {
+        $visits = $this->getVisitsRepository()->getUnChecked();
+
+        foreach ($visits as $visit)
+        {
+            $location = GeoIP::getLocation($visit->ip);
+
+            if (!$location['default'])
+            {
+                $visit->isoCode = $location['isoCode'];
+                $visit->country = $location['country'];
+                $visit->city = $location['city'];
+                $visit->state = $location['state'];
+                $visit->postal_code = $location['postal_code'];
+                $visit->lat = $location['lat'];
+                $visit->lon = $location['lon'];
+                $visit->timezone = $location['timezone'];
+                $visit->continent = $location['continent'];
+            }
+
+            $visit->checked = 1;
+            $visit->save();
+        }
     }
 
 }

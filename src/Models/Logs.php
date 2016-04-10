@@ -1,6 +1,7 @@
 <?php namespace jlourenco\base\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use jlourenco\base\Repositories\LogRepositoryInterface;
 use jlourenco\support\Traits\Creation;
 
 class Logs extends Model
@@ -21,6 +22,8 @@ class Logs extends Model
      */
     protected $fillable = [
         'log',
+        'target',
+        'ip',
     ];
 
 }

@@ -24,14 +24,14 @@
 
             <tbody>
 
-            @foreach($movements as $move)
+            @foreach($settings as $setting)
 
                 <tr>
-                    <td>{{ $move->name }}</td>
-                    <td>{{ $move->value }}</td>
-                    <td>{{ Carbon\Carbon::parse($move->modified_at)->format('d M y - H:i') }}</td>
+                    <td>{{ $setting->name }}</td>
+                    <td>{{ $setting->value }}</td>
+                    <td>{{ Carbon\Carbon::parse($setting->modified_at)->format('d M y - H:i') }}</td>
                     <td>
-                        <a href="{{ url('settings/' . $move->id . '/edit') }}">Edit</a>
+                        <a href="{{ url('settings/' . $setting->id . '/edit') }}">Edit</a>
                     </td>
                 </tr>
 

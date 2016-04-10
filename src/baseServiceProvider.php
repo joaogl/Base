@@ -3,6 +3,8 @@
 use Illuminate\Support\ServiceProvider;
 use jlourenco\base\Repositories\SettingsRepository;
 use jlourenco\base\Repositories\UserRepository;
+use jlourenco\base\Repositories\LogRepository;
+use jlourenco\base\Repositories\VisitsRepository;
 
 class baseServiceProvider extends ServiceProvider
 {
@@ -28,6 +30,8 @@ class baseServiceProvider extends ServiceProvider
         $this->registerGroups();
         $this->registerUsers();
         $this->registerSettings();
+        $this->registerLog();
+        $this->registerVisits();
         $this->registerBase();
     }
 
@@ -122,6 +126,38 @@ class baseServiceProvider extends ServiceProvider
     }
 
     /**
+     * Registers the logger.
+     *
+     * @return void
+     */
+    protected function registerLog()
+    {
+        $this->app->singleton('jlourenco.log', function ($app) {
+            $config = $app['config']->get('jlourenco.base');
+
+            $model = array_get($config, 'models.Logs');
+
+            return new LogRepository($model);
+        });
+    }
+
+    /**
+     * Registers the visits.
+     *
+     * @return void
+     */
+    protected function registerVisits()
+    {
+        $this->app->singleton('jlourenco.visits', function ($app) {
+            $config = $app['config']->get('jlourenco.base');
+
+            $model = array_get($config, 'models.Visits');
+
+            return new VisitsRepository($model);
+        });
+    }
+
+    /**
      * Registers base.
      *
      * @return void
@@ -129,7 +165,7 @@ class baseServiceProvider extends ServiceProvider
     protected function registerBase()
     {
         $this->app->singleton('base', function ($app) {
-            $base = new Base($app['jlourenco.settings'], $app['jlourenco.user']);
+            $base = new Base($app['jlourenco.settings'], $app['jlourenco.user'], $app['jlourenco.log'], $app['jlourenco.visits']);
 
             return $base;
         });
@@ -146,6 +182,8 @@ class baseServiceProvider extends ServiceProvider
             'jlourenco.user',
             'jlourenco.group',
             'jlourenco.settings',
+            'jlourenco.log',
+            'jlourenco.visits',
             'base'
         ];
     }

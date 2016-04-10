@@ -23,4 +23,22 @@ class Settings extends Model
         'value'
     ];
 
+    public function options()
+    {
+        $str = explode("* ", $this->description);
+        $choices = array();
+
+        foreach($str as $st)
+        {
+            preg_match('/(?P<digit>\d+) - (?P<name>\w+)/', $st, $matches);
+            if (sizeof($matches) > 0) {
+                $st = str_replace("*/","",$st);
+                $st = str_replace("/*","",$st);
+                $choices[$matches[1]] = explode($matches[1] . ' - ', $st)[1];
+            }
+        }
+
+        return $choices;
+    }
+
 }

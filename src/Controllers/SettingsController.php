@@ -15,27 +15,33 @@ class SettingsController extends Controller
      */
     public function index()
     {
-        $movements = Base::getSettingsRepository()->all();
+        $settings = Base::getSettingsRepository()->all();
 
-        return view('admin.settings.list', compact('movements'));
+        return view('admin.settings.list', compact('settings'));
     }
 
     public function edit($id)
     {
-        $movement = Base::getSettingsRepository()->findOrFail($id);
+        $setting = Base::getSettingsRepository()->findOrFail($id);
 
-        return view('admin.settings.edit', compact('movement'));
+        return view('admin.settings.edit', compact('setting'));
     }
 
-    public function update($id, Request $request)
+    public function  update($id, Request $request)
     {
         $this->validate($request, [ 'value' => 'required' ]);
 
         $move = Base::getSettingsRepository()->findOrFail($id);
 
+        $before = $move->value;
+
         $move->update($request->all());
 
-        return redirect('settings');
+        $after = $move->value;
+
+        Base::Log('Website settings changed. Changed "' . $move->friendly_name . '" value from "' . $before . '" to "' . $after . '"');
+
+        return redirect('admin/settings');
     }
 
 }

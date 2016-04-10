@@ -11,6 +11,7 @@ use Redirect;
 use Lang;
 use URL;
 use Activation;
+use Base;
 use \Cartalyst\Sentinel\Checkpoints\NotActivatedException;
 use \Cartalyst\Sentinel\Checkpoints\ThrottlingException;
 use Reminder;
@@ -141,6 +142,9 @@ class AuthController extends Controller
 
         if (Activation::complete($user, $activationCode))
         {
+            $user->status = 1;
+            $user->save();
+            
             // Activation was successful
             // Redirect to the login page
             return Redirect::route('login')->with('success', Lang::get('auth/message.activate.success'));
@@ -161,7 +165,7 @@ class AuthController extends Controller
      */
     public function postSignin()
     {
-        $isEmail = preg_match('/@/',Input::get('email'));
+        $isEmail = preg_match('/@/', Input::get('email'));
 
         // Declare the rules for the form validation
         $rules = array(
@@ -191,6 +195,10 @@ class AuthController extends Controller
                 // Try to log the user in
                 if(Sentinel::authenticate($data, Input::get('remember-me', false)))
                 {
+                    $user = Sentinel::check();
+                    $user->update(['ip' => Request::ip()]);
+                    Base::Log($user->username . ' (' . $user->first_name . ' ' . $user->last_name . ') logged in with IP ' . Request::ip() );
+                    
                     // Redirect to the dashboard page
                     return Redirect::route("home")->with('success', Lang::get('auth/message.signin.success'));
                 }
@@ -203,6 +211,7 @@ class AuthController extends Controller
             $delay = $e->getDelay();
             $this->messageBag->add('email', Lang::get('auth/message.account_suspended', compact('delay' )));
         }
+        Base::Log('Login attempt registred for ' . Input::only('email')["email"] . ' from IP ' . Request::ip() );
 
         // Ooops.. something went wrong
         return back()->withInput()->withErrors($this->messageBag);
@@ -335,11 +344,15 @@ class AuthController extends Controller
                 }
             }
 
+            Base::Log('New account registred for ' . $user->username . ' (' . $user->first_name . ' ' . $user->last_name . ') from IP ' . Request::ip() );
+
             // Redirect to the home page with success menu
             return Redirect::to("login")->with('success', 'You have successfully signed up.' . $adminActivation ? ' The administrator will review your registration and once approved you\'ll reveice an email.' : $userActivation ? 'You have received an email to activate your account.' : '');
         } catch (UserExistsException $e) {
             $this->messageBag->add('email', Lang::get('auth/message.account_already_exists'));
         }
+
+        Base::Log('New account registration attempt from IP ' . Request::ip() );
 
         // Ooops.. something went wrong
         return Redirect::back()->withInput()->withErrors($this->messageBag);
@@ -380,6 +393,8 @@ class AuthController extends Controller
                 'forgotPasswordUrl' => URL::route('forgot-password-confirm',[$user->id, $reminder->code]),
             );
 
+            Base::Log('Forgot password request for ' . $user->username . ' (' . $user->first_name . ' ' . $user->last_name . ') from IP ' . Request::ip() );
+
             // Send the activation code through email
             Mail::queue('emails.auth.forgot-password', $data, function ($m) use ($user) {
                 $m->to($user->email, $user->first_name . ' ' . $user->last_name);
@@ -417,8 +432,10 @@ class AuthController extends Controller
 
         // Find the user using the password reset code
         $user = Sentinel::findById($userId);
-        if(!$reminder = Reminder::complete($user, $passwordResetCode,Input::get('password')))
+        if(!$reminder = Reminder::complete($user, $passwordResetCode, Input::get('password')))
         {
+            Base::Log('Forgot password confirm failed for ' . $user->username . ' (' . $user->first_name . ' ' . $user->last_name . ') from IP ' . Request::ip() );
+
             // Ooops.. something went wrong
             return Redirect::route('login')->with('error', Lang::get('auth/message.forgot-password-confirm.error'));
         } else {
@@ -428,6 +445,8 @@ class AuthController extends Controller
                 $m->subject('Account Password Changed');
             });
         }
+
+        Base::Log('Forgot password confirmed for ' . $user->username . ' (' . $user->first_name . ' ' . $user->last_name . ') from IP ' . Request::ip() );
 
         // Password successfully reseted
         return Redirect::route('login')->with('success', Lang::get('auth/message.forgot-password-confirm.success'));

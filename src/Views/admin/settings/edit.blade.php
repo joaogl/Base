@@ -16,7 +16,7 @@
 
         @include('errors.list')
 
-        {!! Form::model($movement, array('route' => array('settings.update', $movement->id))) !!}
+        {!! Form::model($setting, array('route' => array('settings.update', $setting->id))) !!}
 
         @include('admin.settings.partials.form', ['submitButton' => 'Update setting'])
 
