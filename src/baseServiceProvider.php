@@ -5,6 +5,7 @@ use jlourenco\base\Repositories\SettingsRepository;
 use jlourenco\base\Repositories\UserRepository;
 use jlourenco\base\Repositories\LogRepository;
 use jlourenco\base\Repositories\VisitsRepository;
+use jlourenco\base\Repositories\JobsRepository;
 
 class baseServiceProvider extends ServiceProvider
 {
@@ -32,6 +33,7 @@ class baseServiceProvider extends ServiceProvider
         $this->registerSettings();
         $this->registerLog();
         $this->registerVisits();
+        $this->registerJobs();
         $this->registerBase();
     }
 
@@ -158,6 +160,22 @@ class baseServiceProvider extends ServiceProvider
     }
 
     /**
+     * Registers the visits.
+     *
+     * @return void
+     */
+    protected function registerJobs()
+    {
+        $this->app->singleton('jlourenco.jobs', function ($app) {
+            $config = $app['config']->get('jlourenco.base');
+
+            $model = array_get($config, 'models.Jobs');
+
+            return new JobsRepository($model);
+        });
+    }
+
+    /**
      * Registers base.
      *
      * @return void
@@ -165,7 +183,7 @@ class baseServiceProvider extends ServiceProvider
     protected function registerBase()
     {
         $this->app->singleton('base', function ($app) {
-            $base = new Base($app['jlourenco.settings'], $app['jlourenco.user'], $app['jlourenco.log'], $app['jlourenco.visits']);
+            $base = new Base($app['jlourenco.settings'], $app['jlourenco.user'], $app['jlourenco.log'], $app['jlourenco.visits'], $app['jlourenco.jobs']);
 
             return $base;
         });
@@ -184,6 +202,7 @@ class baseServiceProvider extends ServiceProvider
             'jlourenco.settings',
             'jlourenco.log',
             'jlourenco.visits',
+            'jlourenco.jobs',
             'base'
         ];
     }

@@ -4,10 +4,12 @@ use jlourenco\base\Repositories\SettingsRepositoryInterface;
 use jlourenco\base\Repositories\UserRepositoryInterface;
 use jlourenco\base\Repositories\LogRepositoryInterface;
 use jlourenco\base\Repositories\VisitsRepositoryInterface;
+use jlourenco\base\Repositories\JobsRepositoryInterface;
 use BadMethodCallException;
 use Request;
 use Jenssegers\Agent\Agent;
 use GeoIP;
+use Sentinel;
 
 class Base
 {
@@ -33,6 +35,12 @@ class Base
      */
     protected $logs;
 
+    /**
+     * The Job repository.
+     *
+     * @var \jlourenco\base\Repositories\JobsRepositoryInterface
+     */
+    protected $jobs;
 
     /**
      * The Visits repository.
@@ -56,12 +64,13 @@ class Base
      * @param  \jlourenco\base\Repositories\LogRepositoryInterface  $log
      * @param  \jlourenco\base\Repositories\VisitsRepositoryInterface  $visits
      */
-    public function __construct(SettingsRepositoryInterface $settings, UserRepositoryInterface $user, LogRepositoryInterface $log, VisitsRepositoryInterface $visits)
+    public function __construct(SettingsRepositoryInterface $settings, UserRepositoryInterface $user, LogRepositoryInterface $log, VisitsRepositoryInterface $visits, JobsRepositoryInterface $jobs)
     {
         $this->settings = $settings;
         $this->user = $user;
         $this->logs = $log;
         $this->visits = $visits;
+        $this->jobs = $jobs;
     }
 
     /**
@@ -149,6 +158,27 @@ class Base
     }
 
     /**
+     * Returns the jobs repository.
+     *c
+     * @return \jlourenco\base\Repositories\JobsRepositoryInterface
+     */
+    public function getJobsRepository()
+    {
+        return $this->jobs;
+    }
+
+    /**
+     * Sets the jobs repository.
+     *
+     * @param  \jlourenco\base\Repositories\JobsRepositoryInterface $jobs
+     * @return void
+     */
+    public function setJobsRepository(JobsRepositoryInterface $jobs)
+    {
+        $this->jobs = $jobs;
+    }
+
+    /**
      * Returns all accessible methods on the associated settings repository.
      *
      * @return array
@@ -194,7 +224,13 @@ class Base
      */
     public function Log($logMessage)
     {
-        $log = $this->getLogsRepository()->create(['log' => $logMessage, 'ip' => Request::ip()]);
+        $target = null;
+
+        if ($user = Sentinel::getUser())
+            if ($user != null)
+                $target = $user->id;
+
+        $log = $this->getLogsRepository()->create(['log' => $logMessage, 'ip' => Request::ip(), 'target' => $target]);
     }
 
     /**
@@ -218,6 +254,7 @@ class Base
         $pversion = $agent->version($platform);
 
         $browserString = $browser . ' version ' . $version . ' | ' . $platform . ' version ' . $pversion;
+
 
         $visit = $this->getVisitsRepository()->create(['url' => Request::url(), 'ip' => Request::ip(), 'browser' => $browserString]);
     }

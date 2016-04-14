@@ -10,6 +10,6 @@
 
     <p>Best regards,</p>
 
-    <p>João Lourenço.</p>
+    <p>{{ Base::getSetting('EMAIL_SIGNATURE') }}.</p>
 
 @stop

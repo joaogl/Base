@@ -17,9 +17,13 @@
         }
     ],
     "require": {
-        "illuminate/support": "~5.1",
-        "php" : ">=5.4.0",
-        "jlourenco/support" : "1.*"
+        "jlourenco/support" : "1.*",
+        "yajra/laravel-datatables-oracle": "^6.3",
+        "cartalyst/sentinel": "^2.0",
+        "tom-lingham/searchy" : "2.*",
+        "nicolaslopezj/searchable": "^1.7",
+        "jenssegers/agent": "^2.3",
+        "torann/geoip": "^0.2.2"
     },
     "require-dev": {
         "phpunit/phpunit" : "4.*",

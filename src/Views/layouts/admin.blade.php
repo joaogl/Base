@@ -1,82 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="keywords" content="@stack('keywords')">
 
-    <title>Admin</title>
+    <title>
+        @section('title')
+            | {{ Base::getSetting('SITE_NAME') }}
+        @show
+    </title>
 
-    <!-- Fonts -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css" rel='stylesheet' type='text/css'>
-    <link href="https://fonts.googleapis.com/css?family=Lato:100,300,400,700" rel='stylesheet' type='text/css'>
-
-    <!-- Styles -->
+    <!-- Bootstrap Core CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
-    {{-- <link href="{{ elixir('css/app.css') }}" rel="stylesheet"> --}}
 
-    <style>
-        body {
-            font-family: 'Lato';
-        }
+    <!-- MetisMenu CSS -->
+    <link href="{{ asset('assets/vendors/metisMenu/dist/metisMenu.min.css') }}" rel="stylesheet">
 
-        .fa-btn {
-            margin-right: 6px;
-        }
-    </style>
+    <!-- Timeline CSS -->
+    <link href="{{ asset('assets/vendors/timeline/timeline.css') }}" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="{{ asset('assets/vendors/sb-admin-2/sb-admin-2.css') }}" rel="stylesheet">
+
+    <!-- Morris Charts CSS -->
+    <link href="{{ asset('assets/vendors/morrisjs/morris.css') }}" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="{{ asset('css/custom.css') }}" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css" rel='stylesheet' type='text/css'>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!--page level css-->
+    @yield('header_styles')
+    @stack('header_styles_stack')
+    <!--end of page level css-->
+
 </head>
-<body id="app-layout">
-<nav class="navbar navbar-default">
-    <div class="container">
-        <div class="navbar-header">
 
-            <!-- Collapsed Hamburger -->
-            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#app-navbar-collapse">
-                <span class="sr-only">Toggle Navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
+<body>
 
-            <!-- Branding Image -->
-            <a class="navbar-brand" href="{{ url('/') }}">
-                Laravel
-            </a>
-        </div>
+    <div id="wrapper">
 
-        <div class="collapse navbar-collapse" id="app-navbar-collapse">
-            <!-- Left Side Of Navbar -->
-            <ul class="nav navbar-nav">
-                <li><a href="{{ url('/home') }}">Home</a></li>
-            </ul>
+        <!-- Navigation -->
+        <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
 
-            <!-- Right Side Of Navbar -->
-            <ul class="nav navbar-nav navbar-right">
-                <!-- Authentication Links -->
-                @if (Auth::guest())
-                    <li><a href="{{ url('/login') }}">Login</a></li>
-                    <li><a href="{{ url('/register') }}">Register</a></li>
-                @else
-                    <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-                            {{ Auth::user()->name }} <span class="caret"></span>
-                        </a>
+                <!-- Branding Image -->
+                <a class="navbar-brand" href="{{ url('/') }}">
+                    {{ Base::getSetting('SITE_NAME') }}
+                </a>
+            </div>
+            <!-- /.navbar-header -->
 
-                        <ul class="dropdown-menu" role="menu">
-                            <li><a href="{{ url('/logout') }}"><i class="fa fa-btn fa-sign-out"></i>Logout</a></li>
-                        </ul>
-                    </li>
-                @endif
-            </ul>
-        </div>
+            @include('admin.partials.top_menu')
+
+            @include('admin.partials.side_menu')
+
+        </nav>
+
+        <!-- Notifications -->
+        @include('layouts.popups')
+
+        <!-- Content -->
+        @yield('content')
+
     </div>
-</nav>
+    <!-- /#wrapper -->
 
-@yield('content')
+    <!-- jQuery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
 
-        <!-- JavaScripts -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-{{-- <script src="{{ elixir('js/app.js') }}"></script> --}}
+    <!-- Bootstrap Core JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+    <!-- Metis Menu Plugin JavaScript -->
+    <script src="{{ asset('assets/vendors/metisMenu/dist/metisMenu.min.js') }}"></script>
+
+    <!-- Morris Charts JavaScript -->
+    <script src="{{ asset('assets/vendors/raphael/raphael-min.js') }}"></script>
+    <script src="{{ asset('assets/vendors/morrisjs/morris.js') }}"></script>
+
+    <!-- Custom Theme JavaScript -->
+    <script src="{{ asset('assets/vendors/sb-admin-2/sb-admin-2.js') }}"></script>
+
+    <!-- Notify JavaScript -->
+    <script src="{{ asset('assets/vendors/bootstrap-notify-3.1.3/bootstrap-notify.min.js') }}"></script>
+
+    @yield('footer_scripts')
+    @stack('footer_scripts_stack')
+
 </body>
+
 </html>

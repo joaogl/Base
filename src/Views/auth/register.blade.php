@@ -6,6 +6,15 @@
     @parent
 @stop
 
+{{-- page level styles --}}
+@section('header_styles')
+
+    <link rel="stylesheet" type="text/css" href="{{ asset('assets/vendors/jasny-bootstrap/css/jasny-bootstrap.min.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ asset('assets/vendors/datepicker/css/datepicker.css') }}">
+
+@stop
+
+
 {{-- Page content --}}
 @section('content')
     <div class="container">
@@ -34,6 +43,25 @@
                                             @endif
                                         @elseif($field['type'] == 'password')
                                             {!! Form::password($fieldid, array('class' => $field['classes'], 'required' => $field['validator'], 'placeholder' => $field['placeholder'], 'maxlength' => $field['maxlength'])) !!}
+                                        @elseif($field['type'] == 'gender')
+                                            <div class="radio">
+                                                <label>
+                                                    <input type="radio" name="gender" value="0" />
+                                                    Male
+                                                </label>
+                                            </div>
+                                            <div class="radio">
+                                                <label>
+                                                    <input type="radio" name="gender" value="1" />
+                                                    Female
+                                                </label>
+                                            </div>
+                                            <div class="radio">
+                                                <label>
+                                                    <input type="radio" name="gender" value="2" />
+                                                    Other
+                                                </label>
+                                            </div>
                                         @endif
                                         <span class="help-block">
                                             <strong>{{ $errors->first($fieldid, ':message') }}</strong>
@@ -70,3 +98,17 @@
         </div>
     </div>
 @endsection
+
+{{-- page level scripts --}}
+@section('footer_scripts')
+
+    <script type="text/javascript" src="{{ asset('assets/vendors/jasny-bootstrap/js/jasny-bootstrap.min.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('assets/vendors/datepicker/js/bootstrap-datepicker.js') }}"></script>
+    <script>
+        $('.datepicker').datepicker({
+            format: 'dd/mm/yyyy'
+        });
+    </script>
+
+@stop
+

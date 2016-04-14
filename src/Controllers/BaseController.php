@@ -7,6 +7,7 @@ use jlourenco\base\Models\Jobs;
 use jlourenco\base\Models\Visits;
 use Sentinel;
 use Illuminate\Auth\Access\Response;
+use Base;
 
 class BaseController extends Controller
 {
@@ -29,7 +30,7 @@ class BaseController extends Controller
      */
     public function ajaxGetLogs()
     {
-        return \Response::json(array('data' => Logs::orderBy('created_at', 'desc')->take(300)->get(['ip', 'log', 'created_at', 'created_by', 'target'])));
+        return \Response::json(array('data' => Base::getLogsRepository()->orderBy('created_at', 'desc')->take(300)->get(['ip', 'log', 'created_at', 'created_by', 'target'])));
     }
 
     /**
@@ -50,7 +51,7 @@ class BaseController extends Controller
      */
     public function ajaxGetQueues()
     {
-        $data = Jobs::orderBy('created_at', 'desc')->take(300)->get(['queue', 'payload', 'attempts', 'reserved', 'reserved_at', 'created_at']);
+        $data = Base::getJobsRepository()->orderBy('created_at', 'desc')->take(300)->get(['queue', 'payload', 'attempts', 'reserved', 'reserved_at', 'created_at']);
 
         foreach ($data as $d)
         {
@@ -80,7 +81,7 @@ class BaseController extends Controller
      */
     public function ajaxGetVisits()
     {
-        $data = Visits::orderBy('created_at', 'desc')->take(300)->get(['url', 'browser', 'ip', 'created_at', 'country']);
+        $data = Base::getVisitsRepository()->orderBy('created_at', 'desc')->take(300)->get(['url', 'browser', 'ip', 'created_at', 'country']);
 
         return \Response::json(array('data' => $data));
     }

@@ -9,7 +9,12 @@ use Input;
 use File;
 use Activation;
 use Hash;
+use Mail;
+use URL;
 use Illuminate\Support\Facades\Redirect;
+use Base;
+use DB;
+use Lang;
 
 class UsersController extends Controller
 {
@@ -30,10 +35,8 @@ class UsersController extends Controller
 
     protected $validationRulesAdmin = array(
         'gender'           =>  'required|digits_between:0,2',
-        //'username'         => 'required|min:3|unique:User|max:25',
         'first_name'       => 'required|min:3|max:25',
         'last_name'        => 'required|min:3|max:25',
-        //'email'            => 'required|email|unique:User,email,3,status|max:255',
         'password'         => 'required|between:3,32',
         'password_confirm' => 'required|same:password',
         'birthday'         =>  'date_format:d/m/Y|before:now',
@@ -97,13 +100,6 @@ class UsersController extends Controller
      */
     public function updateAccount()
     {
-        // Base::Log('Website settings changed. Changed "' . $move->friendly_name . '" value from "' . $before . '" to "' . $after . '"');
-        // Mail::queue('emails.auth.password-changed', [ 'user' => $user], function ($m) use ($user) {
-        //    $m->to($user->email, $user->first_name . ' ' . $user->last_name);
-        //    $m->subject('Account Password Changed');
-        //});
-
-        
         $user = Sentinel::getUser();
 
         //validationRules are declared at beginning
@@ -137,15 +133,20 @@ class UsersController extends Controller
         if (Input::get('birthday') != null)
             $user->birthday = \Carbon\Carbon::createFromFormat('d/m/Y', Input::get('birthday'));
 
+        $passwordChanged = false;
+
         // Do we want to update the user password?
         if ($password = Input::get('password'))
         {
             if (Sentinel::validateCredentials($user, [ 'email' => $email, 'password' => Input::get('old-password')]))
+            {
+                $passwordChanged = true;
                 $user->password = Hash::make($password);
+            }
             else
             {
-                $error = "Incorrect password";
-                $validator->messages()->add('old-password', 'Incorrect password');
+                $error = Lang::get('base.auth.wrong_password');
+                $validator->messages()->add('old-password', Lang::get('base.auth.wrong_password'));
 
                 // Redirect to the user page
                 return Redirect::route('profile')->withInput()->withErrors($validator)->with('error', $error);
@@ -166,19 +167,32 @@ class UsersController extends Controller
 
             //save new file path into db
             $user->pic = $safeName;
+
+            Base::Log($user->username . ' (' . $user->first_name . ' ' . $user->last_name . ') changed its profile photo. ');
         }
 
         // Was the user updated?
         if ($user->save()) {
             // Prepare the success message
-            $success = 'User was successfully updated.';
+            $success = Lang::get('base.auth.account.changed');
+
+            if ($passwordChanged)
+            {
+                Base::Log($user->username . ' (' . $user->first_name . ' ' . $user->last_name . ') changed its password. ');
+                Mail::queue('emails.account.password-changed', [ 'user' => $user ], function ($m) use ($user) {
+                    $m->to($user->email, $user->first_name . ' ' . $user->last_name);
+                    $m->subject(Lang::get('base.mails.password_changed'));
+                });
+            }
+
+            Base::Log($user->username . ' (' . $user->first_name . ' ' . $user->last_name . ') updated the profile. ');
 
             // Redirect to the user page
             return Redirect::route('profile')->with('success', $success);
         }
 
         // Prepare the error message
-        $error = 'There was an issue updating the user. Please try again.';
+        $error = Lang::get('base.base.error');
 
         // Redirect to the user page
         return Redirect::route('profile')->withInput()->with('error', $error);
@@ -235,7 +249,14 @@ class UsersController extends Controller
                 if ($user->save())
                 {
                     // Prepare the success message
-                    $success = 'User was successfully updated.';
+                    $success = Lang::get('base.auth.account.changed');
+
+                    Mail::queue('emails.account.password-changed', [ 'user' => $user ], function ($m) use ($user) {
+                        $m->to($user->email, $user->first_name . ' ' . $user->last_name);
+                        $m->subject(Lang::get('base.mails.password_changed'));
+                    });
+
+                    Base::Log($user->username . ' (' . $user->first_name . ' ' . $user->last_name . ') changed its password account. ');
 
                     // Redirect to the user page
                     return Redirect::route($redirect)->with('success', $success);
@@ -243,18 +264,18 @@ class UsersController extends Controller
             }
             else
             {
-                $error = "Incorrect password";
-                $validator->messages()->add('old-password', 'Incorrect password');
+                $error = Lang::get('base.auth.wrong_password');
+                $validator->messages()->add('old-password', Lang::get('base.auth.wrong_password'));
 
                 // Redirect to the user page
                 return Redirect::route('change-password')->withInput()->withErrors($validator)->with('error', $error);
             }
 
             // Prepare the error message
-            $error = 'There was an issue updating the user. Please try again.';
-        } catch (LoginRequiredException $e) {
-            $error = 'The login field is required';
+        } catch (Exception $e) {
         }
+        $error = Lang::get('base.base.error');
+
 
         // Redirect to the user page
         return Redirect::route('change-password')->withInput()->with('error', $error);
@@ -266,12 +287,136 @@ class UsersController extends Controller
     public function getAdminIndex()
     {
         // Grab all the users
-        $users = Sentinel::createModel()->All();
+        $users = Sentinel::createModel()->where('status', '=', '1')->Get();
 
         $possibleStatus = $this->status;
+        $pending = false;
 
         // Show the page
-        return View('admin.users.list', compact('users', 'possibleStatus'));
+        return View('admin.users.list', compact('users', 'possibleStatus', 'pending'));
+    }
+
+    public function getAdminPending()
+    {
+        // Grab all the users
+        $users = Sentinel::createModel()->where('last_login', '=', null)->where('status', '=', '0')->Get();
+
+        $possibleStatus = $this->status;
+        $pending = true;
+
+        // Show the page
+        return View('admin.users.list', compact('users', 'possibleStatus', 'pending'));
+    }
+
+    public function getAdminBlocked()
+    {
+        // Grab all the users
+        $users = Sentinel::createModel()->where('status', '=', '2')->Get();
+
+        $possibleStatus = $this->status;
+        $pending = true;
+
+        // Show the page
+        return View('admin.users.list', compact('users', 'possibleStatus', 'pending'));
+    }
+
+    /**
+     * User update form processing page.
+     *
+     * @param  int      $id
+     * @return Redirect
+     */
+    public function adminAccept($id = null)
+    {
+        // Get the user information
+        $user = Sentinel::findById($id);
+
+        if ($user == null || $user->last_login != null || $user->status != 0)
+        {
+            // Prepare the error message
+            $error = Lang::get('base.auth.not_found');
+
+            // Redirect to the user management page
+            return Redirect::route('users.pending')->with('error', $error);
+        }
+
+        $user->status = 1;
+
+        if ($user->save())
+        {
+            $activation = Activation::exists($user);
+
+            if (!$activation)
+            {
+                Activation::create($user);
+
+                $activation = Activation::exists($user);
+            }
+
+            if($activation)
+                Activation::complete($user, $activation->code);
+
+            Base::TargettedLog($user->username . ' (' . $user->first_name . ' ' . $user->last_name . ') account was accepted. ', $user->id);
+
+            Mail::queue('emails.account.accepted-by-admin', [ 'user' => $user ], function ($m) use ($user) {
+                $m->to($user->email, $user->first_name . ' ' . $user->last_name);
+                $m->subject(Lang::get('base.mails.account_accepted'));
+            });
+
+            $success = 'User registration was accepted.';
+
+            // Redirect to the user page
+            return Redirect::route('users.pending')->withInput()->with('success', $success);
+        }
+
+        $error = Lang::get('base.base.error');
+
+        // Redirect to the user page
+        return Redirect::route('users.pending')->withInput()->with('error', $error);
+    }
+
+    /**
+     * User update form processing page.
+     *
+     * @param  int      $id
+     * @return Redirect
+     */
+    public function adminRefuse($id = null)
+    {
+        // Get the user information
+        $user = Sentinel::findById($id);
+
+        if ($user == null || $user->last_login != null || $user->status != 0)
+        {
+            // Prepare the error message
+            $error = Lang::get('base.auth.not_found');
+
+            // Redirect to the user management page
+            return Redirect::route('users.pending')->with('error', $error);
+        }
+
+        $user->status = 2;
+
+        if ($user->save())
+        {
+            Base::TargettedLog($user->username . ' (' . $user->first_name . ' ' . $user->last_name . ') account was refused. ', $user->id);
+
+            if (Base::getSetting('SEND_EMAIL_ON_REFUSE'))
+                Mail::queue('emails.account.refused-by-admin', [ 'user' => $user ], function ($m) use ($user) {
+                    $m->to($user->email, $user->first_name . ' ' . $user->last_name);
+                    $m->subject(Lang::get('base.mails.account_accepted'));
+                });
+
+            $success = Lang::get('base.auth.account.rejected');
+
+            // Redirect to the user page
+            return Redirect::route('users.pending')->withInput()->with('success', $success);
+        }
+
+        $error = Lang::get('base.base.error');
+
+        // Redirect to the user page
+        return Redirect::route('users.pending')->withInput()->with('error', $error);
     }
 
     /**
@@ -282,13 +427,13 @@ class UsersController extends Controller
      */
     public function adminShow($id)
     {
-        try {
-            // Get the user information
-            $user = Sentinel::findUserById($id);
+        // Get the user information
+        $user = Sentinel::findUserById($id);
 
-        } catch (UserNotFoundException $e) {
+        if ($user == null)
+        {
             // Prepare the error message
-            $error = 'User '. $id . ' does not exist.';
+            $error = Lang::get('base.auth.not_found');
 
             // Redirect to the user management page
             return Redirect::route('users')->with('error', $error);
@@ -296,8 +441,11 @@ class UsersController extends Controller
 
         $possibleStatus = $this->status;
 
+        $logs = Base::getLogsRepository()->where('created_by', $user->id)->orWhere('target', $user->id)->orderBy('created_at', 'desc')->take(300)->get(['ip', 'log', 'created_at', 'created_by', 'target']);
+        $ips = Base::getLogsRepository()->where('created_by', $user->id)->where('log', 'LIKE', '%logged%')->orderBy('created_at', 'desc')->select('ip', DB::raw('count(*) as counter'), DB::raw('(SELECT created_at FROM Logs WHERE IP=ip ORDER BY created_at DESC LIMIT 1 ) as created_at'))->groupBy('ip')->take(300)->get();
+
         // Show the page
-        return View('admin.users.show', compact('user', 'possibleStatus'));
+        return View('admin.users.show', compact('user', 'possibleStatus', 'logs', 'ips'));
 
     }
 
@@ -325,20 +473,21 @@ class UsersController extends Controller
     {
         $confirm_route = $error = null;
 
-        try {
-            // Get user information
-            $user = Sentinel::findById($id);
+        // Get user information
+        $user = Sentinel::findById($id);
 
-            // Check if we are not trying to delete ourselves
-            if ($user->id === Sentinel::getUser()->id)  {
-                // Prepare the error message
-                $error = "There was an issue deleting the user. Please try again.";
-
-                return View('layouts.modal_confirmation', compact('error', 'model', 'confirm_route'));
-            }
-        } catch (UserNotFoundException $e) {
+        if ($user == null)
+        {
             // Prepare the error message
-            $error = 'User '. $id . ' does not exist.';
+            $error = Lang::get('base.auth.not_found');
+            return View('layouts.modal_confirmation', compact('error', 'model', 'confirm_route'));
+        }
+
+        // Check if we are not trying to delete ourselves
+        if ($user->id === Sentinel::getUser()->id)  {
+            // Prepare the error message
+            $error = Lang::get('base.base.error');
+
             return View('layouts.modal_confirmation', compact('error', 'model', 'confirm_route'));
         }
 
@@ -354,36 +503,37 @@ class UsersController extends Controller
      */
     public function getAdminDelete($id = null)
     {
-        try {
-            // Get user information
-            $user = Sentinel::findById($id);
+        // Get user information
+        $user = Sentinel::findById($id);
 
-            // Check if we are not trying to delete ourselves
-            if ($user->id === Sentinel::getUser()->id) {
-                // Prepare the error message
-                $error = 'There was an issue deleting the user. Please try again.';
-
-                // Redirect to the user management page
-                return Redirect::route('users')->with('error', $error);
-            }
-
-            // Delete the user
-            //to allow soft deleted, we are performing query on users model instead of Sentinel model
-            //$user->delete();
-            Sentinel::createModel()->destroy($id);
-
-            // Prepare the success message
-            $success = 'User was successfully deleted.';
-
-            // Redirect to the user management page
-            return Redirect::route('users')->with('success', $success);
-        } catch (UserNotFoundException $e) {
+        if ($user == null)
+        {
             // Prepare the error message
-            $error = 'User ' . $id . ' does not exist.';
+            $error = Lang::get('base.auth.not_found');
 
             // Redirect to the user management page
             return Redirect::route('users')->with('error', $error);
         }
+
+        // Check if we are not trying to delete ourselves
+        if ($user->id === Sentinel::getUser()->id) {
+            // Prepare the error message
+            $error = Lang::get('base.base.error');
+
+            // Redirect to the user management page
+            return Redirect::route('users')->with('error', $error);
+        }
+
+        // Delete the user
+        //to allow soft deleted, we are performing query on users model instead of Sentinel model
+        //$user->delete();
+        Sentinel::createModel()->destroy($id);
+
+        // Prepare the success message
+        $success = Lang::get('base.auth.account.deleted');
+
+        // Redirect to the user management page
+        return Redirect::route('users')->with('success', $success);
     }
 
     /**
@@ -394,25 +544,26 @@ class UsersController extends Controller
      */
     public function getAdminRestore($id = null)
     {
-        try {
-            // Get user information
-            $user = Sentinel::createModel()->withTrashed()->find($id);
+        // Get user information
+        $user = Sentinel::createModel()->withTrashed()->find($id);
 
-            // Restore the user
-            $user->restore();
-
-            // Prepare the success message
-            $success = 'User was successfully restored.';
-
-            // Redirect to the user management page
-            return Redirect::route('users.deleted')->with('success', $success);
-        } catch (UserNotFoundException $e) {
+        if ($user == null)
+        {
             // Prepare the error message
-            $error = 'User ' . $id . ' does not exist.';
+            $error = Lang::get('base.auth.not_found');
 
             // Redirect to the user management page
             return Redirect::route('users.deleted')->with('error', $error);
         }
+
+        // Restore the user
+        $user->restore();
+
+        // Prepare the success message
+        $success = Lang::get('base.auth.account.restored');
+
+        // Redirect to the user management page
+        return Redirect::route('users.deleted')->with('success', $success);
     }
 
     /**
@@ -435,7 +586,7 @@ class UsersController extends Controller
         else
         {
             // Prepare the error message
-            $error = Lang::get('users/message.user_not_found', compact('id'));
+            $error = Lang::get('base.auth.not_found');
 
             // Redirect to the user management page
             return Redirect::route('users')->with('error', $error);
@@ -457,12 +608,13 @@ class UsersController extends Controller
      */
     public function postAdminEdit($id = null)
     {
-        try {
-            // Get the user information
-            $user = Sentinel::findById($id);
-        } catch (UserNotFoundException $e) {
+        // Get the user information
+        $user = Sentinel::findById($id);
+
+        if ($user == null)
+        {
             // Prepare the error message
-            $error = 'User ' . $id . ' does not exist.';
+            $error = Lang::get('base.auth.not_found');
 
             // Redirect to the user management page
             return Redirect::route('admin.users.show')->with('error', $error);
@@ -587,27 +739,35 @@ class UsersController extends Controller
 
                 $user->status = $currentStatus;
             }
+            else
+                $user->status = $currentStatus;
 
             // Was the user updated?
             if ($user->save())
             {
                 if ($password_changed && Input::get('send_new_password_email'))
                 {
-                    // Send email!!!
+                    Mail::queue('emails.account.password-changed-by-admin', [ 'user' => $user, 'new_password' => $password ], function ($m) use ($user) {
+                        $m->to($user->email, $user->first_name . ' ' . $user->last_name);
+                        $m->subject(Lang::get('base.mails.password_changed'));
+                    });
                 }
 
+                if ($password_changed)
+                    Base::TargettedLog($user->username . ' (' . $user->first_name . ' ' . $user->last_name . ') password was changed by an admin. ', $user->id);
+
+                Base::TargettedLog($user->username . ' (' . $user->first_name . ' ' . $user->last_name . ') profile was changed by an admin. ', $user->id);
+
                 // Prepare the success message
-                $success = 'User was successfully updated.';
+                $success = Lang::get('base.auth.user_changed');
 
                 // Redirect to the user page
                 return Redirect::route('users.update', $id)->with('success', $success);
             }
 
-            // Prepare the error message
-            $error = 'There was an issue updating the user. Please try again.';
-        } catch (LoginRequiredException $e) {
-            $error = 'The login field is required';
+        } catch (Exception $e) {
         }
+        $error = Lang::get('base.base.error');
 
         // Redirect to the user page
         return Redirect::route('users.update', $id)->withInput()->with('error', $error);
@@ -703,6 +863,41 @@ class UsersController extends Controller
 
             $user->save();
 
+            Base::TargettedLog($user->username . ' (' . $user->first_name . ' ' . $user->last_name . ') account was created by an admin. ', $user->id);
+
+            if (Input::get('send_new_password_email'))
+            {
+                if ($activate)
+                {
+                    Mail::queue('emails.account.account-created-by-admin', [ 'user' => $user, 'new_password' => Input::get('password') ], function ($m) use ($user) {
+                        $m->to($user->email, $user->first_name . ' ' . $user->last_name);
+                        $m->subject(Lang::get('base.mails.account_created'));
+                    });
+                }
+                else
+                {
+                    Mail::queue('emails.account.account-created-by-admin-inactive', [ 'user' => $user, 'new_password' => Input::get('password') ], function ($m2) use ($user) {
+                        $m2->to($user->email, $user->first_name . ' ' . $user->last_name);
+                        $m2->subject(Lang::get('base.mails.account_created'));
+                    });
+
+                    $activation = Activation::create($user);
+
+                    // Data to be used on the email view
+                    $data = array(
+                        'user'          => $user,
+                        'activationUrl' => URL::route('activate', [$user->id, $activation->code]),
+                    );
+
+                    // Send the activation code through email
+                    Mail::queue('emails.auth.register-activate', $data, function ($m) use ($user) {
+                        $m->to($user->email, $user->first_name . ' ' . $user->last_name);
+                        $m->subject(Lang::get('base.mails.welcome') . ' ' . $user->first_name);
+                    });
+
+                }
+            }
+
             //add user to 'User' group
             /*$role = Sentinel::findRoleById(Input::get('group'));
             $role->users()->attach($user);
@@ -723,15 +918,11 @@ class UsersController extends Controller
             }*/
 
             // Redirect to the home page with success menu
-            return Redirect::route("users")->with('success', 'User was successfully deleted.');
+            return Redirect::route("users")->with('success', Lang::get('base.auth.account.created'));
 
-        } catch (LoginRequiredException $e) {
-            $error = 'The login field is required';
-        } catch (PasswordRequiredException $e) {
-            $error = 'The password is required.';
-        } catch (UserExistsException $e) {
-            $error = 'User already exists!\'';
+        } catch (Exception $e) {
         }
+        $error = Lang::get('base.base.error');
 
         // Redirect to the user creation page
         return Redirect::back()->withInput()->with('error', $error);

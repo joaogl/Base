@@ -13,5 +13,6 @@
 
     <p>Best regards,</p>
 
-    <p>@lang('general.site_name') Team</p>
+    <p>{{ Base::getSetting('EMAIL_SIGNATURE') }}.</p>
+
 @stop

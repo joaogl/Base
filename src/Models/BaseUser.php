@@ -142,8 +142,8 @@ class BaseUser extends EloquentUser
             'validator' => 'date_format:d/m/Y|before:now',
             'label' => 'Birthday',
             'placeholder' => 'Your birthday',
-            'classes' => 'form-control input-lg JQCalendar',
-            'maxlength' => 25,
+            'classes' => 'form-control input-lg JQCalendar datepicker',
+            'maxlength' => 10,
             'save' => true
         ],
         'gender' => [

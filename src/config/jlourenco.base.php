@@ -17,10 +17,11 @@ return [
             'Group' => 'jlourenco\base\Models\Group',
             'ActivityFeed' => 'jlourenco\base\Models\ActivityFeed',
             'Logs' => 'jlourenco\base\Models\Logs',
+            'Visits' => 'jlourenco\base\Models\Visits',
             'Settings' => 'jlourenco\base\Models\Settings',
 
-        ]
-
+        ],
+        'VisitCounter' => true,
     ],
 
 ];

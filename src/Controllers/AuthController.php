@@ -18,7 +18,7 @@ use Reminder;
 use Mail;
 use Illuminate\Support\MessageBag;
 
-class AuthController extends Controller
+class AuthController extends controller
 {
     use \jlourenco\support\Traits\CaptchaTrait;
 
@@ -97,11 +97,11 @@ class AuthController extends Controller
         if(!$user = Sentinel::findById($userId))
         {
             // Redirect to the forgot password page
-            return Redirect::route('forgot-password')->with('error', Lang::get('auth/message.forgot-password-confirm.error'));
+            return Redirect::route('forgot-password')->with('error', Lang::get('base.auth.forgot_password_confirm.error'));
         }
 
         // Show the page
-        return View('auth.forgot-password-confirm',compact('userId', 'passwordResetCode'));
+        return View('auth.forgot-password-confirm', compact('userId', 'passwordResetCode'));
     }
 
     /**
@@ -115,7 +115,7 @@ class AuthController extends Controller
         Sentinel::logout();
 
         // Redirect to the users page
-        return Redirect::to('/')->with('success', 'You have successfully logged out!');
+        return Redirect::to('/')->with('success', Lang::get('base.auth.logged_out'));
     }
 
     /**
@@ -136,7 +136,7 @@ class AuthController extends Controller
         if(!$user = Sentinel::findById($userId))
         {
             // Redirect to the forgot password page
-            return Redirect::route('login')->with('error', Lang::get('auth/message.activate.error'));
+            return Redirect::route('login')->with('error', Lang::get('base.auth.activate.error'));
         }
         // $activation = Activation::exists($user);
 
@@ -147,12 +147,12 @@ class AuthController extends Controller
             
             // Activation was successful
             // Redirect to the login page
-            return Redirect::route('login')->with('success', Lang::get('auth/message.activate.success'));
+            return Redirect::route('login')->with('success', Lang::get('base.auth.activate.success'));
         }
         else
         {
             // Activation not found or not completed.
-            $error = Lang::get('auth/message.activate.error');
+            $error = Lang::get('base.auth.activate.error');
             return Redirect::route('login')->with('error', $error);
         }
 
@@ -200,16 +200,16 @@ class AuthController extends Controller
                     Base::Log($user->username . ' (' . $user->first_name . ' ' . $user->last_name . ') logged in with IP ' . Request::ip() );
                     
                     // Redirect to the dashboard page
-                    return Redirect::route("home")->with('success', Lang::get('auth/message.signin.success'));
+                    return Redirect::route("home")->with('success', Lang::get('base.auth.signin.success'));
                 }
             }
 
-            $this->messageBag->add('email', Lang::get('auth/message.account_not_found'));
+            $this->messageBag->add('email', Lang::get('base.auth.account.not_found'));
         } catch (NotActivatedException $e) {
-            $this->messageBag->add('email', Lang::get('auth/message.account_not_activated'));
+            $this->messageBag->add('email', Lang::get('base.auth.account.not_activated'));
         } catch (ThrottlingException $e) {
             $delay = $e->getDelay();
-            $this->messageBag->add('email', Lang::get('auth/message.account_suspended', compact('delay' )));
+            $this->messageBag->add('email', Lang::get('base.auth.account.suspended', compact('delay' )));
         }
         Base::Log('Login attempt registred for ' . Input::only('email')["email"] . ' from IP ' . Request::ip() );
 
@@ -240,7 +240,7 @@ class AuthController extends Controller
         $adminActivation = $signupStatus == 3;
 
         if (!$signupEnabled)
-            return Redirect::to(URL::previous())->withInput()->with('error', 'Registration is disabled at the moment');
+            return Redirect::to(URL::previous())->withInput()->with('error', Lang::get('base.auth.account.registration_disabled'));
 
         $rules = array();
 
@@ -258,7 +258,7 @@ class AuthController extends Controller
         // If validation fails, we'll exit the operation now.
         if ($validator->fails() || ($err = $this->captchaCheck()) == false) {
             if ($err)
-                return Redirect::to(URL::previous())->withInput()->withErrors(['g-recaptcha-response' => 'Wrong captcha']);
+                return Redirect::to(URL::previous())->withInput()->withErrors(['g-recaptcha-response' => Lang::get('base.captcha.error')]);
 
             // Ooops.. something went wrong
             return Redirect::to(URL::previous())->withInput()->withErrors($validator);
@@ -296,7 +296,7 @@ class AuthController extends Controller
                     Sentinel::update($user, ['email' => Input::get('email')]);
                 }
                 else
-                    return Redirect::to(URL::previous())->withInput()->with('error', 'Something went wrong. Please try using a different email, if it still doesn\'t work please contact the administrator.');
+                    return Redirect::to(URL::previous())->withInput()->with('error', Lang::get('base.auth.account.registration_failed'));
             }
             // Register the user
             else
@@ -316,7 +316,7 @@ class AuthController extends Controller
                 // Send the activation code through email
                 Mail::queue('emails.auth.register-activate', $data, function ($m) use ($user) {
                     $m->to($user->email, $user->first_name . ' ' . $user->last_name);
-                    $m->subject('Welcome ' . $user->first_name);
+                    $m->subject(Lang::get('base.mails.welcome') . ' ' . $user->first_name);
                 });
             }
 
@@ -325,7 +325,7 @@ class AuthController extends Controller
             {
                 Mail::queue('emails.auth.register-admin-activate', ['user' => $user], function ($m) use ($user) {
                     $m->to($user->email, $user->first_name . ' ' . $user->last_name);
-                    $m->subject('Welcome ' . $user->first_name);
+                    $m->subject(Lang::get('base.mails.welcome') . ' ' . $user->first_name);
                 });
             }
 
@@ -339,7 +339,7 @@ class AuthController extends Controller
 
                     Mail::queue('emails.auth.activated', ['user' => $user], function ($m) use ($user) {
                         $m->to($user->email, $user->first_name . ' ' . $user->last_name);
-                        $m->subject('Welcome ' . $user->first_name);
+                        $m->subject(Lang::get('base.mails.welcome') . ' ' . $user->first_name);
                     });
                 }
             }
@@ -347,9 +347,9 @@ class AuthController extends Controller
             Base::Log('New account registred for ' . $user->username . ' (' . $user->first_name . ' ' . $user->last_name . ') from IP ' . Request::ip() );
 
             // Redirect to the home page with success menu
-            return Redirect::to("login")->with('success', 'You have successfully signed up.' . $adminActivation ? ' The administrator will review your registration and once approved you\'ll reveice an email.' : $userActivation ? 'You have received an email to activate your account.' : '');
+            return Redirect::to("login")->with('success', Lang::get('base.auth.signup.success') . $adminActivation ? Lang::get('base.auth.signup.admin') : $userActivation ? Lang::get('base.auth.signup.self') : Lang::get('base.auth.signup.ready'));
         } catch (UserExistsException $e) {
-            $this->messageBag->add('email', Lang::get('auth/message.account_already_exists'));
+            $this->messageBag->add('email', Lang::get('base.auth.account.already_exists'));
         }
 
         Base::Log('New account registration attempt from IP ' . Request::ip() );
@@ -398,12 +398,12 @@ class AuthController extends Controller
             // Send the activation code through email
             Mail::queue('emails.auth.forgot-password', $data, function ($m) use ($user) {
                 $m->to($user->email, $user->first_name . ' ' . $user->last_name);
-                $m->subject('Account Password Recovery');
+                $m->subject(Lang::get('base.mails.recovery'));
             });
         }
 
         //  Redirect to the forgot password
-        return Redirect::to(URL::previous())->with('success', Lang::get('auth/message.forgot-password.success'));
+        return Redirect::to(URL::previous())->with('success', Lang::get('base.auth.forgot_password.success'));
     }
 
     /**
@@ -437,19 +437,19 @@ class AuthController extends Controller
             Base::Log('Forgot password confirm failed for ' . $user->username . ' (' . $user->first_name . ' ' . $user->last_name . ') from IP ' . Request::ip() );
 
             // Ooops.. something went wrong
-            return Redirect::route('login')->with('error', Lang::get('auth/message.forgot-password-confirm.error'));
+            return Redirect::route('login')->with('error', Lang::get('base.auth.forgot_password_confirm.error'));
         } else {
             // Send the activation code through email
             Mail::queue('emails.auth.password-changed', [ 'user' => $user], function ($m) use ($user) {
                 $m->to($user->email, $user->first_name . ' ' . $user->last_name);
-                $m->subject('Account Password Changed');
+                $m->subject(Lang::get('base.mails.password_changed'));
             });
         }
 
         Base::Log('Forgot password confirmed for ' . $user->username . ' (' . $user->first_name . ' ' . $user->last_name . ') from IP ' . Request::ip() );
 
         // Password successfully reseted
-        return Redirect::route('login')->with('success', Lang::get('auth/message.forgot-password-confirm.success'));
+        return Redirect::route('login')->with('success', Lang::get('base.auth.forgot_password_confirm.success'));
     }
 
 }
