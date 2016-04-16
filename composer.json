@@ -17,7 +17,7 @@
         }
     ],
     "require": {
-        "jlourenco/support" : "1.*",
+        "jlourenco/support" : "0.1.*",
         "yajra/laravel-datatables-oracle": "^6.3",
         "cartalyst/sentinel": "^2.0",
         "tom-lingham/searchy" : "2.*",
