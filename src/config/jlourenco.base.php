@@ -22,6 +22,8 @@ return [
 
         ],
         'VisitCounter' => true,
+        'UseDefaultMiddleware' => true,
+        'UseDefaultMiddlewareGroups' => true,
     ],
 
 ];

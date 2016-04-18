@@ -6,6 +6,7 @@ use jlourenco\base\Repositories\UserRepository;
 use jlourenco\base\Repositories\LogRepository;
 use jlourenco\base\Repositories\VisitsRepository;
 use jlourenco\base\Repositories\JobsRepository;
+use Illuminate\Console\Scheduling\Schedule;
 
 class baseServiceProvider extends ServiceProvider
 {
@@ -35,6 +36,8 @@ class baseServiceProvider extends ServiceProvider
         $this->registerVisits();
         $this->registerJobs();
         $this->registerBase();
+        $this->registerToAppConfig();
+        $this->registerMiddleware();
     }
 
     /**
@@ -45,7 +48,7 @@ class baseServiceProvider extends ServiceProvider
     protected function prepareResources()
     {
         // Publish our views
-        $this->loadViewsFrom(base_path("resources/views"), 'base');
+        // $this->loadViewsFrom(base_path("resources/views"), 'base');
         $this->publishes([
             __DIR__ .  '/views' => base_path("resources/views")
         ]);
@@ -53,7 +56,12 @@ class baseServiceProvider extends ServiceProvider
         // Publish our lang
         $this->publishes([
             __DIR__ .  '/lang' => base_path("resources/lang")
-        ], 'migrations');
+        ]);
+
+        // Publish our public
+        $this->publishes([
+            __DIR__ .  '/public' => base_path("public")
+        ]);
 
         // Publish our migrations
         $this->publishes([
@@ -189,6 +197,77 @@ class baseServiceProvider extends ServiceProvider
         });
 
         $this->app->alias('base', 'jlourenco\base\Base');
+    }
+
+    /**
+     * Registers this module to the
+     * services providers and aliases.
+     *
+     * @return void
+     */
+    protected function registerToAppConfig()
+    {
+        /*
+         * Register the service provider for the dependencies.
+         */
+        $this->app->register(\Cartalyst\Sentinel\Laravel\SentinelServiceProvider::class);
+        $this->app->register(\TomLingham\Searchy\SearchyServiceProvider::class);
+        $this->app->register(\Jenssegers\Agent\AgentServiceProvider::class);
+        $this->app->register(\Torann\GeoIP\GeoIPServiceProvider::class);
+        // $this->app->register(' jlourenco\base\baseServiceProvider');
+
+        /*
+         * Create aliases for the dependencies.
+         */
+        $loader = \Illuminate\Foundation\AliasLoader::getInstance();
+        $loader->alias('Schema', 'jlourenco\support\Database\Schema');
+        $loader->alias('Activation', 'Cartalyst\Sentinel\Laravel\Facades\Activation');
+        $loader->alias('Reminder', 'Cartalyst\Sentinel\Laravel\Facades\Reminder');
+        $loader->alias('Sentinel', 'Cartalyst\Sentinel\Laravel\Facades\Sentinel');
+        $loader->alias('Datatables', 'yajra\Datatables\Datatables');
+        $loader->alias('SentinelUser', 'App\Http\Middleware\SentinelUser');
+        $loader->alias('Base', 'jlourenco\base\Facades\Base');
+        $loader->alias('Searchy', 'TomLingham\Searchy\Facades\Searchy');
+        $loader->alias('Agent', 'Jenssegers\Agent\Facades\Agent');
+        $loader->alias('GeoIP', 'Torann\GeoIP\GeoIPFacade');
+    }
+
+    protected function registerMiddleware()
+    {
+        $config = $this->app['config']->get('jlourenco.base');
+        $useMiddleware = array_get($config, 'UseDefaultMiddleware');
+        $useMiddlewareGroup = array_get($config, 'UseDefaultMiddlewareGroups');
+
+        if ($useMiddleware == true)
+        {
+            $this->app['router']->middleware('visits.counter', \jlourenco\base\Middleware\VisitsCounter::class);
+            $this->app['router']->middleware('auth', \jlourenco\base\Middleware\SentinelUser::class);
+        }
+
+        if ($useMiddlewareGroup == true)
+        {
+            $this->app['router']->middlewareGroup('webAdmin', [
+                \App\Http\Middleware\EncryptCookies::class,
+                \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+                \Illuminate\Session\Middleware\StartSession::class,
+                \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+                \App\Http\Middleware\VerifyCsrfToken::class,
+                \jlourenco\base\Middleware\NewPasswordForce::class,
+                'visits.counter',
+                'throttle:30,1',
+            ]);
+            $this->app['router']->middlewareGroup('webPublic', [
+                \App\Http\Middleware\EncryptCookies::class,
+                \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+                \Illuminate\Session\Middleware\StartSession::class,
+                \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+                \App\Http\Middleware\VerifyCsrfToken::class,
+                \jlourenco\base\Middleware\NewPasswordForce::class,
+                'visits.counter',
+                'throttle:60,1',
+            ]);
+        }
+
     }
 
     /**
