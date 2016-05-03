@@ -30,6 +30,9 @@
                     <li>
                         <a href="{{ url('admin/categories/list') }}">Categories</a>
                     </li>
+                    <li class="hidden">
+                        <a href="{{ url('admin/categories/create') }}">Add category</a>
+                    </li>
                     <li>
                         <a href="{{ url('admin/posts/list') }}">Posts</a>
                     </li>
@@ -44,6 +47,9 @@
             <li>
                 <a href="#"><i class="fa fa-cogs fa-fw"></i> System<span class="fa arrow"></span></a>
                 <ul class="nav nav-second-level">
+                    <li>
+                        <a href="{{ url('admin/groups/list') }}">Groups</a>
+                    </li>
                     <li>
                         <a href="{{ url('admin/settings') }}">Settings</a>
                     </li>

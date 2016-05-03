@@ -4,7 +4,7 @@
 @section('title')
     User details
     @parent
-@stop
+@endsection
 
 {{-- page level styles --}}
 @section('header_styles')
@@ -15,7 +15,7 @@
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/vendors/datatables/extensions/bootstrap/dataTables.bootstrap.css') }}" />
     <link href="{{ asset('css/tables.css') }}" rel="stylesheet" type="text/css" />
 
-@stop
+@endsection
 
 {{-- Page content --}}
 @section('content')
@@ -48,130 +48,149 @@
 
                                         <!-- Nav tabs -->
                                         <ul class="nav nav-tabs">
-                                                <li class="active">
-                                                    <a href="#userdata" data-toggle="tab" aria-expanded="true">User information</a>
-                                                </li>
+                                            <li class="active">
+                                                <a href="#userdata" data-toggle="tab" aria-expanded="true">User information</a>
+                                            </li>
+                                            <li class="">
+                                                <a href="#usergroups" data-toggle="tab" aria-expanded="false">User groups</a>
+                                            </li>
                                             <li class="">
                                                 <a href="#userlogs" data-toggle="tab" aria-expanded="false">User logs</a>
                                             </li>
                                             <li class="">
                                                 <a href="#userips" data-toggle="tab" aria-expanded="false">User recent ip's</a>
                                             </li>
-                                            </ul>
+                                        </ul>
 
                                             <!-- Tab panes -->
                                             <div class="tab-content">
                                                 <div class="tab-pane fade active in" id="userdata">
-                                                    <div class="table-responsive">
-                                                        <table class="table table-striped" id="users">
-                                                            <tr>
-                                                                <td>First name</td>
-                                                                <td>{{ $user->first_name }}</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>Last name</td>
-                                                                <td>{{ $user->last_name }}</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>Username</td>
-                                                                <td>{{ $user->username }}</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>User e-mail</td>
-                                                                <td>{{ $user->email }}</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>Birthday</td>
+                                                    <table class="table table-striped" id="users">
+                                                        <tr>
+                                                            <td>First name</td>
+                                                            <td>{{ $user->first_name }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Last name</td>
+                                                            <td>{{ $user->last_name }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Username</td>
+                                                            <td>{{ $user->username }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>User e-mail</td>
+                                                            <td>{{ $user->email }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Birthday</td>
+                                                            @if ($user->birthday != null)
                                                                 <td>{{ $user->birthday->format('d-m-Y') }} ({{ $user->birthday->diff(Carbon\Carbon::now())->format('%y years old') }} - {{ Carbon\Carbon::createFromDate(Carbon\Carbon::now()->year, $user->birthday->month, $user->birthday->day)->diff(Carbon\Carbon::now())->format('%m months and %d days until next birthday') }})</td>
+                                                            @else
+                                                                <td></td>
+                                                            @endif
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Status</td>
+                                                            <td>
+                                                                @if($user->deleted_at)
+                                                                    Deleted
+                                                                @else
+                                                                    {{ $possibleStatus[$user->status] }}
+                                                                @endif
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Last IP</td>
+                                                            <td>
+                                                                {!! $user->ip !!}
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Created at</td>
+                                                            <td>
+                                                                {!! $user->created_at->diffForHumans() !!}
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Last login</td>
+                                                            <td>
+                                                                {!! $user->last_login != null ? $user->last_login->diffForHumans() : 'Never' !!}
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Description</td>
+                                                            <td>
+                                                                {!! $user->description !!}
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </div>
+                                                <div class="tab-pane fade" id="usergroups">
+                                                    <table class="table table-bordered" id="table3">
+                                                        <thead>
+                                                            <tr class="filters">
+                                                                <th>Group name</th>
                                                             </tr>
-                                                            <tr>
-                                                                <td>Status</td>
-                                                                <td>
-                                                                    @if($user->deleted_at)
-                                                                        Deleted
-                                                                    @else
-                                                                        {{ $possibleStatus[$user->status] }}
-                                                                    @endif
-                                                                </td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>Last IP</td>
-                                                                <td>
-                                                                    {!! $user->ip !!}
-                                                                </td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>Created at</td>
-                                                                <td>
-                                                                    {!! $user->created_at->diffForHumans() !!}
-                                                                </td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>Last login</td>
-                                                                <td>
-                                                                    {!! $user->last_login != null ? $user->last_login->diffForHumans() : 'Never' !!}
-                                                                </td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>Description</td>
-                                                                <td>
-                                                                    {!! $user->description !!}
-                                                                </td>
-                                                            </tr>
-                                                        </table>
-                                                    </div>
+                                                        </thead>
+                                                        <tbody>
+
+                                                            @foreach ($user->roles as $role)
+                                                                <tr>
+                                                                    <td>{!! $role->name !!}</td>
+                                                                </tr>
+                                                            @endforeach
+
+                                                        </tbody>
+                                                    </table>
                                                 </div>
                                                 <div class="tab-pane fade" id="userlogs">
-                                                    <div class="table-responsive">
-                                                        <table class="table table-bordered" id="table">
-                                                            <thead>
-                                                            <tr class="filters">
-                                                                <th>IP</th>
-                                                                <th>Message</th>
-                                                                <th>Who acted</th>
-                                                                <th>Upon whom</th>
-                                                                <th>Date</th>
+                                                    <table class="table table-bordered" id="table">
+                                                        <thead>
+                                                        <tr class="filters">
+                                                            <th>IP</th>
+                                                            <th>Message</th>
+                                                            <th>Who acted</th>
+                                                            <th>Upon whom</th>
+                                                            <th>Date</th>
+                                                        </tr>
+                                                        </thead>
+                                                        <tbody>
+
+                                                        @foreach ($logs as $log)
+                                                            <tr>
+                                                                <td>{!! $log->ip !!}</td>
+                                                                <td>{!! $log->log !!}</td>
+                                                                <td>{!! $log->created_by !!}</td>
+                                                                <td>{!! $log->target !!}</td>
+                                                                <td>{!! $log->created_at !!}</td>
                                                             </tr>
-                                                            </thead>
-                                                            <tbody>
+                                                        @endforeach
 
-                                                            @foreach ($logs as $log)
-                                                                <tr>
-                                                                    <td>{!! $log->ip !!}</td>
-                                                                    <td>{!! $log->log !!}</td>
-                                                                    <td>{!! $log->created_by !!}</td>
-                                                                    <td>{!! $log->target !!}</td>
-                                                                    <td>{!! $log->created_at !!}</td>
-                                                                </tr>
-                                                            @endforeach
-
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
+                                                        </tbody>
+                                                    </table>
                                                 </div>
                                                 <div class="tab-pane fade" id="userips">
-                                                    <div class="table-responsive">
-                                                        <table class="table table-bordered" id="table2">
-                                                            <thead>
-                                                            <tr class="filters">
-                                                                <th>Counter</th>
-                                                                <th>IP</th>
-                                                                <th>Date</th>
+                                                    <table class="table table-bordered" id="table2">
+                                                        <thead>
+                                                        <tr class="filters">
+                                                            <th>Counter</th>
+                                                            <th>IP</th>
+                                                            <th>Date</th>
+                                                        </tr>
+                                                        </thead>
+                                                        <tbody>
+
+                                                        @foreach ($ips as $log)
+                                                            <tr>
+                                                                <td>{!! $log->counter !!}</td>
+                                                                <td>{!! $log->ip !!}</td>
+                                                                <td>{!! $log->created_at !!}</td>
                                                             </tr>
-                                                            </thead>
-                                                            <tbody>
+                                                        @endforeach
 
-                                                            @foreach ($ips as $log)
-                                                                <tr>
-                                                                    <td>{!! $log->counter !!}</td>
-                                                                    <td>{!! $log->ip !!}</td>
-                                                                    <td>{!! $log->created_at !!}</td>
-                                                                </tr>
-                                                            @endforeach
-
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
+                                                        </tbody>
+                                                    </table>
                                                 </div>
                                             </div>
                                         </ul>
@@ -184,7 +203,7 @@
             </div>
         </div>
     </div>
-    @stop
+@endsection
 
 {{-- page level scripts --}}
 @section('footer_scripts')
@@ -195,6 +214,20 @@
     <!-- Bootstrap DataTables -->
     <script type="text/javascript" src="{{ asset('assets/vendors/datatables/js/jquery.dataTables.min.js') }}"></script>
     <script type="text/javascript" src="{{ asset('assets/vendors/datatables/extensions/bootstrap/dataTables.bootstrap.js') }}"></script>
+
+    <div class="modal fade" id="delete_confirm" tabindex="-1" role="dialog" aria-labelledby="user_delete_confirm_title" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content"></div>
+        </div>
+    </div>
+
+    <script>
+        $(function () {
+            $('body').on('hidden.bs.modal', '.modal', function () {
+                $(this).removeData('bs.modal');
+            });
+        });
+    </script>
 
     <script>
         $(document).ready(function() {
@@ -208,6 +241,12 @@
                 "order": [[ 1, "desc" ]]
             });
         });
+
+        $(document).ready(function() {
+            $('#table3').DataTable({
+                "order": [[ 0, "desc" ]]
+            });
+        });
     </script>
 
-@stop
+@endsection

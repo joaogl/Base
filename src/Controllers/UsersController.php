@@ -446,7 +446,6 @@ class UsersController extends Controller
 
         // Show the page
         return View('admin.users.show', compact('user', 'possibleStatus', 'logs', 'ips'));
-
     }
 
     /**
@@ -473,6 +472,9 @@ class UsersController extends Controller
     {
         $confirm_route = $error = null;
 
+        $title = 'Delete User';
+        $message = 'Are you sure to delete this user?';
+
         // Get user information
         $user = Sentinel::findById($id);
 
@@ -480,7 +482,7 @@ class UsersController extends Controller
         {
             // Prepare the error message
             $error = Lang::get('base.auth.not_found');
-            return View('layouts.modal_confirmation', compact('error', 'model', 'confirm_route'));
+            return View('layouts.modal_confirmation', compact('title', 'message', 'error', 'model', 'confirm_route'));
         }
 
         // Check if we are not trying to delete ourselves
@@ -488,11 +490,11 @@ class UsersController extends Controller
             // Prepare the error message
             $error = Lang::get('base.base.error');
 
-            return View('layouts.modal_confirmation', compact('error', 'model', 'confirm_route'));
+            return View('layouts.modal_confirmation', compact('title', 'message', 'error', 'model', 'confirm_route'));
         }
 
         $confirm_route = route('delete/user', ['id' => $user->id]);
-        return View('layouts.modal_confirmation', compact('error', 'model', 'confirm_route'));
+        return View('layouts.modal_confirmation', compact('title', 'message', 'error', 'model', 'confirm_route'));
     }
 
     /**
@@ -596,8 +598,22 @@ class UsersController extends Controller
         $genders = $this->genders;
         $statusList = $this->status;
 
+        $groups = null;
+        $groups2 = Sentinel::getRoleRepository()->all(['id', 'name']);
+
+        foreach ($groups2 as $g)
+        {
+            $has = false;
+            foreach ($user->roles as $g2)
+                if ($g2->id == $g->id)
+                    $has = true;
+
+            if (!$has)
+                $groups[$g->id] = $g->name;
+        }
+
         // Show the page
-        return View('admin/users/edit', compact('user', 'roles', 'userRoles', 'status', 'genders', 'statusList'));
+        return View('admin/users/edit', compact('user', 'status', 'genders', 'statusList', 'groups'));
     }
 
     /**
@@ -926,6 +942,146 @@ class UsersController extends Controller
 
         // Redirect to the user creation page
         return Redirect::back()->withInput()->with('error', $error);
+    }
+
+    /**
+     * Remove group Confirm
+     *
+     * @param   int   $id
+     * @param   int   $gid
+     * @return  View
+     */
+    public function getAdminModalRemoveGroup($id = null, $gid = null)
+    {
+        $confirm_route = $error = null;
+
+        $title = 'Remove group';
+        $message = 'Are you sure to remove this group from this user?';
+
+        // Get user information
+        $user = Sentinel::findById($id);
+
+        if ($user == null)
+        {
+            // Prepare the error message
+            $error = Lang::get('base.auth.not_found');
+            return View('layouts.modal_confirmation', compact('title', 'message', 'error', 'model', 'confirm_route'));
+        }
+
+        // Check if we are not trying to delete ourselves
+        if ($user->id === Sentinel::getUser()->id + 1)  {
+            // Prepare the error message
+            $error = Lang::get('base.base.yourself');
+
+            return View('layouts.modal_confirmation', compact('title', 'message', 'error', 'model', 'confirm_route'));
+        }
+
+        // Get group information
+        $group = Sentinel::findRoleById($gid);
+
+        if ($group == null)
+        {
+            // Prepare the error message
+            $error = Lang::get('base.groups.not_found');
+            return View('layouts.modal_confirmation', compact('title', 'message', 'error', 'model', 'confirm_route'));
+        }
+
+        $confirm_route = route('remove/group', ['id' => $user->id, 'gid' => $group->id]);
+        return View('layouts.modal_confirmation', compact('title', 'message', 'error', 'model', 'confirm_route'));
+    }
+
+    /**
+     * Remove the group from the given user.
+     *
+     * @param  int      $id
+     * @param  int      $gid
+     * @return Redirect
+     */
+    public function getAdminRemoveGroup($id = null, $gid = null)
+    {
+        // Get user information
+        $user = Sentinel::findById($id);
+
+        if ($user == null)
+        {
+            // Prepare the error message
+            $error = Lang::get('base.auth.not_found');
+            return View('layouts.modal_confirmation', compact('title', 'message', 'error', 'model', 'confirm_route'));
+        }
+
+        // Check if we are not trying to delete ourselves
+        if ($user->id === Sentinel::getUser()->id + 1)  {
+            // Prepare the error message
+            $error = Lang::get('base.base.yourself');
+
+            return View('layouts.modal_confirmation', compact('title', 'message', 'error', 'model', 'confirm_route'));
+        }
+
+        // Get group information
+        $group = Sentinel::findRoleById($gid);
+
+        if ($group == null)
+        {
+            // Prepare the error message
+            $error = Lang::get('base.groups.not_found');
+            return View('layouts.modal_confirmation', compact('title', 'message', 'error', 'model', 'confirm_route'));
+        }
+
+        // Remove the group
+        $group->users()->detach($user);
+
+        // Prepare the success message
+        $success = Lang::get('base.groups.removed');
+
+        // Redirect to the user management page
+        return Redirect::route('users.update', $user->id)->with('success', $success);
+    }
+
+    /**
+     * Add the group to a given user.
+     *
+     * @param  int      $id
+     * @return Redirect
+     */
+    public function postAdminAddGroup($id = null)
+    {
+        // Get user information
+        $user = Sentinel::findById($id);
+
+        if ($user == null)
+        {
+            // Prepare the error message
+            $error = Lang::get('base.auth.not_found');
+            return View('layouts.modal_confirmation', compact('title', 'message', 'error', 'model', 'confirm_route'));
+        }
+
+        $gid = Input::get('group');
+
+        if ($gid == null)
+        {
+            // Prepare the error message
+            $error = Lang::get('base.groups.not_found');
+            return View('layouts.modal_confirmation', compact('title', 'message', 'error', 'model', 'confirm_route'));
+        }
+
+        // Get group information
+        $group = Sentinel::findRoleById($gid);
+
+        if ($group == null)
+        {
+            // Prepare the error message
+            $error = Lang::get('base.groups.not_found');
+            return View('layouts.modal_confirmation', compact('title', 'message', 'error', 'model', 'confirm_route'));
+        }
+
+        // Remove the group
+        $group->users()->attach($user);
+
+        // Prepare the success message
+        $success = Lang::get('base.groups.added');
+
+        // Redirect to the user management page
+        return Redirect::route('users.update', $user->id)->with('success', $success);
     }
 
 }

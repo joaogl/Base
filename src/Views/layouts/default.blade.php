@@ -75,7 +75,11 @@
                                     <ul class="dropdown-menu" role="menu">
                                         <li><a href="{{ url('/profile') }}"><i class="fa fa-user fa-fw"></i> User Profile</a></li>
                                         <li><a href="{{ url('/change-password') }}"><i class="fa fa-key fa-fw"></i> Change password</a></li>
-                                        <li><a href="{{ url('/admin') }}"><i class="fa fa-cogs fa-fw"></i> Administration</a></li>
+
+                                        @if (Sentinel::inRole('admin'))
+                                            <li><a href="{{ url('/admin') }}"><i class="fa fa-cogs fa-fw"></i> Administration</a></li>
+                                        @endif
+
                                         <li class="divider"></li>
                                         <li><a href="{{ url('/logout') }}"><i class="fa fa-btn fa-sign-out"></i>Logout</a></li>
                                     </ul>

@@ -16,4 +16,4 @@
 
     <p>{{ Base::getSetting('EMAIL_SIGNATURE') }}.</p>
 
-@stop
+@endsection

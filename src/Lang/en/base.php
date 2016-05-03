@@ -55,7 +55,7 @@ return array(
             'registration_failed' => 'Something went wrong. Please try using a different email, if it still doesn\'t work please contact the administrator.',
             'already_exists' => 'An account with this email already exists.',
             'created' => 'Account successfully created.',
-            'changed' => 'Your user successfully updated.',
+            'changed' => 'Your user was successfully updated.',
             'rejected' => 'User registration was refused.',
             'deleted' => 'User was successfully deleted.',
             'restored' => 'User was successfully restored.',
@@ -78,6 +78,17 @@ return array(
 
     'base' => array(
         'error'   => 'There was an issue updating the user. Please try again.',
+        'yourself'   => 'You cannot edit yourself.',
+    ),
+
+    'groups' => array(
+        'not_found' => 'Group does not exist.',
+        'removed' => 'Group successfully removed.',
+        'already_exists' => 'A group with this name already exists.',
+        'created' => 'Group successfully created.',
+        'deleted' => 'Group was successfully deleted.',
+        'changed' => 'Group was successfully updated.',
+        'added' => 'Group was successfully added.',
     ),
 
 );

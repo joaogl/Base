@@ -4,13 +4,13 @@
 @section('title')
     Queues
     @parent
-@stop
+@endsection
 
 {{-- page level styles --}}
 @section('header_styles')
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/vendors/datatables/extensions/bootstrap/dataTables.bootstrap.css') }}" />
     <link href="{{ asset('css/tables.css') }}" rel="stylesheet" type="text/css" />
-@stop
+@endsection
 
 {{-- Page content --}}
 @section('content')
@@ -74,4 +74,4 @@
 
     </script>
 
-@stop
+@endsection

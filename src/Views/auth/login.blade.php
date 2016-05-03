@@ -4,7 +4,7 @@
 @section('title')
     Login
     @parent
-@stop
+@endsection
 
 {{-- Page content --}}
 @section('content')
@@ -57,4 +57,4 @@
         </div>
     </div>
 
-@stop
+@endsection

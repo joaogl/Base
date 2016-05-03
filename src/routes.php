@@ -24,6 +24,11 @@ Route::group(array('prefix' => '/', 'middleware' => 'webPublic'), function ()
         return View::make('home');
     }));
 
+    Route::get('home', array('as' => 'user.home', function()
+    {
+        return View::make('home');
+    }));
+
     /**
      * Account related routes
      */
@@ -56,12 +61,6 @@ Route::group(array('prefix' => '/', 'middleware' => 'webPublic'), function ()
         Route::get('change-password', array('as' => 'change-password', 'uses' => 'jlourenco\base\Controllers\UsersController@getChangePassword'));
         Route::post('change-password', 'jlourenco\base\Controllers\UsersController@postChangePassword');
     });
-
-    # Blog pages
-    /* GET  */ Route::get('blog', 'jlourenco\blog\Controllers\BlogController@index');
-    /* GET  */ Route::get('blog/{id}', 'jlourenco\blog\Controllers\BlogController@show');
-    /* GET  */ Route::get('category/{id}', 'jlourenco\blog\Controllers\BlogController@showByCategory');
-    /* GET  */ Route::get('search/{terms?}', 'jlourenco\blog\Controllers\BlogController@search');
 
 });
 
@@ -105,33 +104,23 @@ Route::group(array('prefix' => '/admin', 'middleware' => ['webAdmin', 'auth']), 
         Route::get('/list/{userId}/restore', array('as' => 'restore/user', 'uses' => 'jlourenco\base\Controllers\UsersController@getAdminRestore'));
         Route::get('deleted',array('as' => 'users.deleted', 'uses' => 'jlourenco\base\Controllers\UsersController@getAdminDeletedUsers'));
         Route::get('/list/{userId}', array('as' => 'users.show', 'uses' => 'jlourenco\base\Controllers\UsersController@adminShow'));
+
+        Route::get('/list/{userId}/confirm-remove/{groupId}', array('as' => 'confirm-remove/group', 'uses' => 'jlourenco\base\Controllers\UsersController@getAdminModalRemoveGroup'));
+        Route::get('/list/{userId}/remove-group/{groupId}', array('as' => 'remove/group', 'uses' => 'jlourenco\base\Controllers\UsersController@getAdminRemoveGroup'));
+
+        Route::post('/{userId}/add-group', array('as' => 'users.add.group', 'uses' => 'jlourenco\base\Controllers\UsersController@postAdminAddGroup'));
     });
 
-    # Blog Management
-    Route::group(array('prefix' => 'categories'), function () {
-        Route::get('/list', array('as' => 'blogs', 'uses' => 'jlourenco\blog\Controllers\BlogController@getAdminIndex'));
-        Route::get('/create', array('as' => 'create/blog', 'uses' => 'jlourenco\blog\Controllers\BlogController@getAdminCreate'));
-        Route::post('/create', 'jlourenco\blog\Controllers\BlogController@postAdminCreate');
-        Route::get('{blogId}/edit', array('as' => 'blogs.update', 'uses' => 'jlourenco\blog\Controllers\BlogController@getAdminEdit'));
-        Route::post('{blogId}/edit', 'jlourenco\blog\Controllers\BlogController@postAdminEdit');
-        Route::get('{blogId}/delete', array('as' => 'delete/blog', 'uses' => 'jlourenco\blog\Controllers\BlogController@getAdminDelete'));
-        Route::get('{blogId}/confirm-delete', array('as' => 'confirm-delete/blog', 'uses' => 'jlourenco\blog\Controllers\BlogController@getAdminModalDelete'));
-        Route::get('{blogId}/restore', array('as' => 'restore/blog', 'uses' => 'jlourenco\blog\Controllers\BlogController@getAdminRestore'));
-        Route::get('deleted',array('as' => 'blogs.deleted', 'uses' => 'jlourenco\blog\Controllers\BlogController@getAdminDeletedBlogs'));
-        Route::get('{blogId}', array('as' => 'blogs.show', 'uses' => 'jlourenco\blog\Controllers\BlogController@adminShow'));
-    });
-
-    Route::group(array('prefix' => 'posts'), function () {
-        Route::get('/list', array('as' => 'blogs', 'uses' => 'jlourenco\blog\Controllers\BlogController@getAdminIndex'));
-        Route::get('/create', array('as' => 'create/blog', 'uses' => 'jlourenco\blog\Controllers\BlogController@getAdminCreate'));
-        Route::post('/create', 'jlourenco\blog\Controllers\BlogController@postAdminCreate');
-        Route::get('{blogId}/edit', array('as' => 'blogs.update', 'uses' => 'jlourenco\blog\Controllers\BlogController@getAdminEdit'));
-        Route::post('{blogId}/edit', 'jlourenco\blog\Controllers\BlogController@postAdminEdit');
-        Route::get('{blogId}/delete', array('as' => 'delete/blog', 'uses' => 'jlourenco\blog\Controllers\BlogController@getAdminDelete'));
-        Route::get('{blogId}/confirm-delete', array('as' => 'confirm-delete/blog', 'uses' => 'jlourenco\blog\Controllers\BlogController@getAdminModalDelete'));
-        Route::get('{blogId}/restore', array('as' => 'restore/blog', 'uses' => 'jlourenco\blog\Controllers\BlogController@getAdminRestore'));
-        Route::get('deleted',array('as' => 'blogs.deleted', 'uses' => 'jlourenco\blog\Controllers\BlogController@getAdminDeletedBlogs'));
-        Route::get('{blogId}', array('as' => 'blogs.show', 'uses' => 'jlourenco\blog\Controllers\BlogController@adminShow'));
+    # Groups Management
+    Route::group(array('prefix' => 'groups'), function () {
+        Route::get('/list', array('as' => 'groups', 'uses' => 'jlourenco\base\Controllers\GroupsController@index'));
+        Route::get('/create', array('as' => 'create.group', 'uses' => 'jlourenco\base\Controllers\GroupsController@getCreate'));
+        Route::post('/create', 'jlourenco\base\Controllers\GroupsController@postCreate');
+        Route::get('{groupId}/edit', array('as' => 'group.update', 'uses' => 'jlourenco\base\Controllers\GroupsController@getEdit'));
+        Route::post('{groupId}/edit', 'jlourenco\base\Controllers\GroupsController@postEdit');
+        Route::get('{groupId}/delete', array('as' => 'delete/group', 'uses' => 'jlourenco\base\Controllers\GroupsController@getDelete'));
+        Route::get('{groupId}/confirm-delete', array('as' => 'confirm-delete/group', 'uses' => 'jlourenco\base\Controllers\GroupsController@getModalDelete'));
+        Route::get('{groupId}', array('as' => 'group.show', 'uses' => 'jlourenco\base\Controllers\GroupsController@show'));
     });
 
     # Logs pages
@@ -147,4 +136,3 @@ Route::group(array('prefix' => '/admin', 'middleware' => ['webAdmin', 'auth']), 
     /* GET  */ Route::get('getVisits', 'jlourenco\base\Controllers\BaseController@ajaxGetVisits');
 
 });
-

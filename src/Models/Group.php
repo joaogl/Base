@@ -1,6 +1,8 @@
 <?php namespace jlourenco\base\Models;
 
 use Cartalyst\Sentinel\Roles\EloquentRole;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use jlourenco\support\Traits\Creation;
 
 class Group extends EloquentRole
 {
@@ -19,6 +21,16 @@ class Group extends EloquentRole
         'permissions',
         'description',
     ];
+
+    /**
+     * To allow soft deletes
+     */
+    use SoftDeletes;
+
+    /**
+     * To allow user actions identity (Created_by, Updated_by, Deleted_by)
+     */
+    use Creation;
 
     /**
      * The Users relationship.

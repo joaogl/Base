@@ -4,7 +4,7 @@
 @section('title')
     Home
     @parent
-@stop
+@endsection
 
 {{-- Page content --}}
 @section('content')

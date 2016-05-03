@@ -1,12 +1,14 @@
 <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-    <h4 class="modal-title" id="user_delete_confirm_title">Delete User</h4>
+    <h4 class="modal-title" id="delete_confirm_title">
+        {!! $title !!}
+    </h4>
 </div>
 <div class="modal-body">
     @if($error)
         <div>{!! $error !!}</div>
     @else
-        Are you sure to delete this user?
+        {!! $message !!}
     @endif
 </div>
 <div class="modal-footer">

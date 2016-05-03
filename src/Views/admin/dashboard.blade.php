@@ -4,7 +4,7 @@
 @section('title')
     Admin
     @parent
-@stop
+@endsection
 
 {{-- Page content --}}
 @section('content')

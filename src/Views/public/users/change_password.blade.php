@@ -4,7 +4,7 @@
 @section('title')
     User password
     @parent
-@stop
+@endsection
 
 {{-- page level styles --}}
 @section('header_styles')
@@ -12,7 +12,7 @@
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/vendors/jasny-bootstrap/css/jasny-bootstrap.min.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/vendors/datepicker/css/datepicker.css') }}">
 
-@stop
+@endsection
 
 {{-- Page content --}}
 @section('content')
@@ -89,7 +89,7 @@
             </div>
         </div>
     </div>
-@stop
+@endsection
 
 {{-- page level scripts --}}
 @section('footer_scripts')
@@ -102,4 +102,4 @@
         });
     </script>
 
-@stop
+@endsection

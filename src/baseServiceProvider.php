@@ -48,7 +48,6 @@ class baseServiceProvider extends ServiceProvider
     protected function prepareResources()
     {
         // Publish our views
-        // $this->loadViewsFrom(base_path("resources/views"), 'base');
         $this->publishes([
             __DIR__ .  '/views' => base_path("resources/views")
         ]);
@@ -67,6 +66,11 @@ class baseServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__ .  '/migrations' => base_path("database/migrations")
         ], 'migrations');
+
+        // Publish our migrations
+        $this->publishes([
+            __DIR__ .  '/seeds' => base_path("database/seeds")
+        ], 'seeds');
 
         // Publish a config file
         $this->publishes([
@@ -214,7 +218,6 @@ class baseServiceProvider extends ServiceProvider
         $this->app->register(\TomLingham\Searchy\SearchyServiceProvider::class);
         $this->app->register(\Jenssegers\Agent\AgentServiceProvider::class);
         $this->app->register(\Torann\GeoIP\GeoIPServiceProvider::class);
-        // $this->app->register(' jlourenco\base\baseServiceProvider');
 
         /*
          * Create aliases for the dependencies.

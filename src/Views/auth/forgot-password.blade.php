@@ -4,7 +4,7 @@
 @section('title')
     Forgot password
     @parent
-@stop
+@endsection
 
 {{-- Page content --}}
 @section('content')
@@ -51,4 +51,4 @@
         </div>
     </div>
 
-@stop
+@endsection

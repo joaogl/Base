@@ -2,7 +2,7 @@
 
 {{-- Page title --}}
 @section('title')
-    Users
+    Groups
     @parent
 @endsection
 
@@ -12,16 +12,16 @@
     <div id="page-wrapper">
         <div class="row">
             <div class="col-lg-12">
-                <h1 class="page-header">Create user</h1>
+                <h1 class="page-header">Create group</h1>
             </div>
             <!-- /.col-lg-12 -->
         </div>
         <!-- /.row -->
         <div class="row">
 
-            {!! Form::model(null, array('route' => array('create.user'), 'files' => true)) !!}
+            {!! Form::model(null, array('route' => array('create.group'))) !!}
 
-            @include('admin.users.partials.form', ['submitButton' => 'Create user'])
+            @include('admin.groups.partials.form', ['submitButton' => 'Create group'])
 
             {!! Form::close() !!}
 

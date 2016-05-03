@@ -15,7 +15,7 @@ class SentinelUser
      */
     public function handle($request, Closure $next)
     {
-        if (!Sentinel::check()) {
+        if (!Sentinel::check() || !Sentinel::inRole('admin')) {
             if ($request->ajax()) {
                 return response('Unauthorized.', 401);
             } else {

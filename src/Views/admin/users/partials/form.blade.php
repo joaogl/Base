@@ -3,7 +3,12 @@
 @push('header_styles_stack')
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/vendors/jasny-bootstrap/css/jasny-bootstrap.min.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/vendors/datepicker/css/datepicker.css') }}">
-@stop
+
+
+    <link rel="stylesheet" type="text/css" href="{{ asset('assets/vendors/datatables/extensions/bootstrap/dataTables.bootstrap.css') }}" />
+    <link href="{{ asset('css/tables.css') }}" rel="stylesheet" type="text/css" />
+
+@endpush
 
 <div class="form-group">
     <div class="row">
@@ -148,20 +153,17 @@
     </div>
 </div>
 
-<div class="form-group">
-    <div class="row">
-        <div class="col-md-offset-1 col-md-4">
-        </div>
-    </div>
-</div>
-
-
 {{-- page level scripts --}}
 @push('footer_scripts_stack')
+
+    <!-- Bootstrap DataTables -->
+    <script type="text/javascript" src="{{ asset('assets/vendors/datatables/js/jquery.dataTables.min.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('assets/vendors/datatables/extensions/bootstrap/dataTables.bootstrap.js') }}"></script>
 
     <script type="text/javascript" src="{{ asset('assets/vendors/jasny-bootstrap/js/jasny-bootstrap.min.js') }}"></script>
     <script type="text/javascript" src="{{ asset('assets/vendors/datepicker/js/bootstrap-datepicker.js') }}"></script>
     <script>
+
         $('#generate_password').on('click', function(event){
             event.preventDefault();
 
@@ -216,6 +218,13 @@
         $('.JQCalendar').datepicker({
             format: 'dd/mm/yyyy'
         });
+
+        $(document).ready(function() {
+            $('#table3').DataTable({
+                "order": [[ 2, "desc" ]]
+            });
+        });
+
     </script>
 
-@stop
+@endpush

@@ -48,7 +48,12 @@ class AuthController extends controller
     {
         // Is the user logged in?
         if (Sentinel::check())
-            return Redirect::route('home');
+        {
+            if (Sentinel::inRole('admin'))
+                return Redirect::route('home');
+            else
+                return Redirect::route('user.home');
+        }
 
         // Show the page
         return View('auth.login');
@@ -63,7 +68,12 @@ class AuthController extends controller
     {
         // Is the user logged in?
         if (Sentinel::check())
-            return Redirect::route('home');
+        {
+            if (Sentinel::inRole('admin'))
+                return Redirect::route('home');
+            else
+                return Redirect::route('user.home');
+        }
 
         // Show the page
         return View('auth.register');
@@ -78,7 +88,12 @@ class AuthController extends controller
     {
         // Is the user logged in?
         if (Sentinel::check())
-            return Redirect::route('home');
+        {
+            if (Sentinel::inRole('admin'))
+                return Redirect::route('home');
+            else
+                return Redirect::route('user.home');
+        }
 
         // Show the page
         return View('auth.forgot-password');
@@ -128,8 +143,12 @@ class AuthController extends controller
     public function getActivate($userId, $activationCode)
     {
         // Is user logged in?
-        if (Sentinel::check()) {
-            return Redirect::route('home');
+        if (Sentinel::check())
+        {
+            if (Sentinel::inRole('admin'))
+                return Redirect::route('home');
+            else
+                return Redirect::route('user.home');
         }
 
         // Find the user using the password reset code
