@@ -25,7 +25,7 @@
                                 <i class="fa fa-comments fa-5x"></i>
                             </div>
                             <div class="col-xs-9 text-right">
-                                <div class="huge">26</div>
+                                <div class="huge">{{ \jlourenco\comments\Models\Comment::all()->count() }}</div>
                                 <div>Comments!</div>
                             </div>
                         </div>

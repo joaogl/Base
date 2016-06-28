@@ -1,12 +1,11 @@
 <?php
 
-use Base;
-
 class DefaultSeeder extends DatabaseSeeder
 {
 
     public function run()
     {
+        
         $admin = Sentinel::registerAndActivate(array(
             'email'       => 'admin@admin.com',
             'password'    => 'admin',
@@ -40,16 +39,7 @@ class DefaultSeeder extends DatabaseSeeder
                                 */',
         ]);
 
-
-        /*
-        Sentinel::getRoleRepository()->createModel()->create([
-            'name'  => 'User',
-            'slug'  => 'user',
-        ]);
-
         $admin->roles()->attach($adminRole);
-        */
-
 
     }
 
