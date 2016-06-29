@@ -111,7 +111,7 @@
                                             <span class="input-group-addon">
                                                 <i class="fa fa-fw fa-calendar text-primary"></i>
                                             </span>
-                                        {!!  Form::text('birthday', Input::old('birthday', $user->birthday->format('d/m/Y')), array('id' => 'datepicker','class' => 'form-control datepicker', 'data-date-format'=> 'yyyy/mm/dd', 'data-provide' => 'datepicker', 'maxlength' => '10'))  !!} </div>
+                                        {!!  Form::text('birthday', Input::old('birthday', $user->birthday != null ? $user->birthday->format('d/m/Y') : ''), array('id' => 'datepicker','class' => 'form-control datepicker', 'data-date-format'=> 'yyyy/mm/dd', 'data-provide' => 'datepicker', 'maxlength' => '10'))  !!} </div>
                                     <span class="help-block">{{ $errors->first('birthday', ':message') }}</span>
                                 </div>
                             </div>
